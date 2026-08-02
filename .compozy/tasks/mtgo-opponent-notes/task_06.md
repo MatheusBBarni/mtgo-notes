@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Deliver encrypted backup, staged restore, and text export
 type: backend
 complexity: critical
@@ -34,16 +34,16 @@ Deliver user-controlled portability without weakening the encrypted local notebo
 
 ## Subtasks
 
-- [ ] 6.1 Complete the durable operation lifecycle, exclusion matrix, progress, cancellation, restart, and priority behavior required by portability flows.
-- [ ] 6.2 Define the versioned canonical archive manifest, authenticated encryption contract, KDF parameters, logical record ordering, and interoperability fixtures.
-- [ ] 6.3 Deliver streaming encrypted backup with snapshot consistency, partial-file handling, durable publication, cancellation, and safe retry.
-- [ ] 6.4 Deliver archive authentication, schema validation, staging import, integrity checks, restore diff calculation, and expiring preview tokens.
-- [ ] 6.5 Deliver transactional merge restore with exact identity, duplicate, provenance, classifier, deletion, and no-resurrection rules.
-- [ ] 6.6 Deliver atomic replace restore plus bounded encrypted rollback creation and typed rollback confirm, apply, and discard lifecycle.
-- [ ] 6.7 Deliver deterministic UTF-8 plaintext text export with explicit disclosure, snapshot consistency, partial-file safety, and cancellation.
-- [ ] 6.8 Complete caller-aware portability commands, safe native file selection, typed events, and host-owned secret handling.
-- [ ] 6.9 Deliver accessible backup, preview, merge/replace, rollback, export, progress, cancellation, and recovery UI.
-- [ ] 6.10 Add cryptographic fixtures, failure injection, bounded-memory checks, concurrency coverage, and full end-to-end portability journeys.
+- [x] 6.1 Complete the durable operation lifecycle, exclusion matrix, progress, cancellation, restart, and priority behavior required by portability flows.
+- [x] 6.2 Define the versioned canonical archive manifest, authenticated encryption contract, KDF parameters, logical record ordering, and interoperability fixtures.
+- [x] 6.3 Deliver streaming encrypted backup with snapshot consistency, partial-file handling, durable publication, cancellation, and safe retry.
+- [x] 6.4 Deliver archive authentication, schema validation, staging import, integrity checks, restore diff calculation, and expiring preview tokens.
+- [x] 6.5 Deliver transactional merge restore with exact identity, duplicate, provenance, classifier, deletion, and no-resurrection rules.
+- [x] 6.6 Deliver atomic replace restore plus bounded encrypted rollback creation and typed rollback confirm, apply, and discard lifecycle.
+- [x] 6.7 Deliver deterministic UTF-8 plaintext text export with explicit disclosure, snapshot consistency, partial-file safety, and cancellation.
+- [x] 6.8 Complete caller-aware portability commands, safe native file selection, typed events, and host-owned secret handling.
+- [x] 6.9 Deliver accessible backup, preview, merge/replace, rollback, export, progress, cancellation, and recovery UI.
+- [x] 6.10 Add cryptographic fixtures, failure injection, bounded-memory checks, concurrency coverage, and full end-to-end portability journeys.
 
 ## Implementation Details
 
@@ -89,15 +89,15 @@ The specific concurrency cases in `_tests.md` govern snapshot backup/export coex
 
 Cases assigned from `_tests.md`, the test contract — read each ID's full definition there before writing tests.
 
-- [ ] UT-077, UT-078, UT-079, UT-080, UT-081, UT-082 — archive manifests, canonical records, authentication, KDF, and version behavior.
-- [ ] UT-083, UT-084, UT-085, UT-086, UT-087, UT-088 — restore diff, merge decisions, rollback state, text formatting, and operation transitions.
-- [ ] IT-131, IT-132, IT-133, IT-134, IT-135, IT-136, IT-137, IT-138, IT-139, IT-140 — encrypted backup creation, snapshot consistency, bounded memory, progress, and cancellation.
-- [ ] IT-141, IT-142, IT-143, IT-144, IT-145, IT-146, IT-147, IT-148, IT-149, IT-150 — archive authentication, wrong passphrase, validation, staging import, and restore preview.
-- [ ] IT-151, IT-152, IT-153, IT-154, IT-155, IT-156, IT-157, IT-158, IT-159, IT-160 — merge/replace confirmation, atomicity, conflicts, tombstones, classifier provenance, and no resurrection.
-- [ ] IT-220, IT-221, IT-222, IT-223, IT-224 — rollback discovery, confirmation, apply, discard, and retention lifecycle.
-- [ ] IT-254, IT-255, IT-256, IT-257, IT-258 — disclosed UTF-8 export contents, ordering, atomic publication, and cancellation.
-- [ ] IT-268 — bounded portability memory under the specified large-notebook workload.
-- [ ] E2E-009, E2E-014, E2E-015, E2E-016, E2E-017 — deletion-safe export, encrypted backup, merge restore, replace/rollback, and portability recovery journeys.
+- [x] UT-077, UT-078, UT-079, UT-080, UT-081, UT-082 — archive manifests, canonical records, authentication, KDF, and version behavior.
+- [x] UT-083, UT-084, UT-085, UT-086, UT-087, UT-088 — restore diff, merge decisions, rollback state, text formatting, and operation transitions.
+- [x] IT-131, IT-132, IT-133, IT-134, IT-135, IT-136, IT-137, IT-138, IT-139, IT-140 — encrypted backup creation, snapshot consistency, bounded memory, progress, and cancellation.
+- [x] IT-141, IT-142, IT-143, IT-144, IT-145, IT-146, IT-147, IT-148, IT-149, IT-150 — archive authentication, wrong passphrase, validation, staging import, and restore preview.
+- [x] IT-151, IT-152, IT-153, IT-154, IT-155, IT-156, IT-157, IT-158, IT-159, IT-160 — merge/replace confirmation, atomicity, conflicts, tombstones, classifier provenance, and no resurrection.
+- [x] IT-220, IT-221, IT-222, IT-223, IT-224 — rollback discovery, confirmation, apply, discard, and retention lifecycle.
+- [x] IT-254, IT-255, IT-256, IT-257, IT-258 — disclosed UTF-8 export contents, ordering, atomic publication, and cancellation.
+- [x] IT-268 — bounded portability memory under the specified large-notebook workload.
+- [x] E2E-009, E2E-014, E2E-015, E2E-016, E2E-017 — deletion-safe export, encrypted backup, merge restore, replace/rollback, and portability recovery journeys.
 
 ## Success Criteria
 
@@ -105,4 +105,3 @@ Cases assigned from `_tests.md`, the test contract — read each ID's full defin
 - Backup archives reveal no plaintext notebook content and restore never mutates live data before successful authentication, staging, preview, and confirmation.
 - Interrupted, cancelled, corrupt, incompatible, or wrong-passphrase operations leave the current notebook usable and do not publish partial output.
 - Users can explicitly recover or discard the encrypted rollback after replace restore and can export a deterministic disclosed text snapshot.
-

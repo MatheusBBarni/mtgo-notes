@@ -1,0 +1,59 @@
+{
+  "decks": [
+    {
+      "id": "burn-001",
+      "format": "Modern",
+      "archetypeId": "burn",
+      "cards": {
+        "oracle-goblin-guide": 4,
+        "oracle-lightning-bolt": 4,
+        "oracle-monastery-swiftspear": 4,
+        "oracle-lava-spike": 4
+      }
+    },
+    {
+      "id": "burn-002",
+      "format": "Modern",
+      "archetypeId": "burn",
+      "cards": {
+        "oracle-goblin-guide": 4,
+        "oracle-lightning-bolt": 4,
+        "oracle-monastery-swiftspear": 4,
+        "oracle-boros-charm": 4
+      }
+    },
+    {
+      "id": "hammer-001",
+      "format": "Modern",
+      "archetypeId": "hammer_time",
+      "cards": {
+        "oracle-colossus-hammer": 4,
+        "oracle-sigardas-aid": 4,
+        "oracle-puresteel-paladin": 4,
+        "oracle-ornithopter": 4
+      }
+    },
+    {
+      "id": "hammer-002",
+      "format": "Modern",
+      "archetypeId": "hammer_time",
+      "cards": {
+        "oracle-colossus-hammer": 4,
+        "oracle-sigardas-aid": 3,
+        "oracle-puresteel-paladin": 4,
+        "oracle-inkmoth-nexus": 4
+      }
+    },
+    {
+      "id": "murktide-001",
+      "format": "Modern",
+      "archetypeId": "izzet_murktide",
+      "cards": {
+        "oracle-murktide-regent": 2,
+        "oracle-dragons-rage-channeler": 3,
+        "oracle-ragavan": 4,
+        "oracle-counterspell": 4
+      }
+    }
+  ]
+}

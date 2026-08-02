@@ -1,0 +1,18 @@
+{
+  "generation": 2,
+  "events": [
+    {
+      "generation": 1,
+      "sequence": 50,
+      "field": "opponent",
+      "value": "Previous"
+    },
+    { "generation": 2, "sequence": 1, "field": "opponent", "value": "Current" },
+    {
+      "generation": 2,
+      "sequence": 1,
+      "field": "opponent",
+      "value": "Duplicate"
+    }
+  ]
+}

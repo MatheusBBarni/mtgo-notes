@@ -31,15 +31,15 @@ Implement the durable, encrypted domain foundation for encounters, disclosure, n
 
 ## Subtasks
 
-- [ ] 2.1 Define the shared domain value objects, aggregate models, revisions, idempotency contracts, and stable error taxonomy.
-- [ ] 2.2 Implement the encounter state machine and ordered evidence reducer with reversible transition records.
-- [ ] 2.3 Implement disclosure authorization and complete phase-filtered projections for all renderer consumers.
-- [ ] 2.4 Establish DPAPI key custody, SQLCipher connection opening, security pragmas, and unclean-shutdown checks.
-- [ ] 2.5 Create the normalized schema, constraints, indexes, settings storage, operation records, and migration ledger.
-- [ ] 2.6 Implement transactional repository primitives that enforce identity, encounter, revision, and idempotency invariants.
-- [ ] 2.7 Implement paged notebook queries, FTS5 synchronization, tombstone filtering, and snapshot reads.
-- [ ] 2.8 Add checksummed migrations, transactional rollback, recovery reporting, and safe unsupported-version handling.
-- [ ] 2.9 Expose only the minimal typed host bootstrap and service seams required by dependent tasks.
+- [x] 2.1 Define the shared domain value objects, aggregate models, revisions, idempotency contracts, and stable error taxonomy.
+- [x] 2.2 Implement the encounter state machine and ordered evidence reducer with reversible transition records.
+- [x] 2.3 Implement disclosure authorization and complete phase-filtered projections for all renderer consumers.
+- [x] 2.4 Establish DPAPI key custody, SQLCipher connection opening, security pragmas, and unclean-shutdown checks.
+- [x] 2.5 Create the normalized schema, constraints, indexes, settings storage, operation records, and migration ledger.
+- [x] 2.6 Implement transactional repository primitives that enforce identity, encounter, revision, and idempotency invariants.
+- [x] 2.7 Implement paged notebook queries, FTS5 synchronization, tombstone filtering, and snapshot reads.
+- [x] 2.8 Add checksummed migrations, transactional rollback, recovery reporting, and safe unsupported-version handling.
+- [x] 2.9 Expose only the minimal typed host bootstrap and service seams required by dependent tasks.
 - [ ] 2.10 Add exhaustive reducer, policy, encryption, schema, migration, concurrency, and repository tests.
 
 ## Implementation Details
@@ -86,11 +86,16 @@ Implement the TechSpec's “Encounter State Machine,” “Core Interfaces,” �
 
 Cases assigned from `_tests.md`, the test contract — read each ID's full definition there before writing tests.
 
-- [ ] UT-009, UT-010, UT-011, UT-012, UT-013, UT-014, UT-015, UT-016, UT-017, UT-018 — encounter reducer states, evidence ordering, generation isolation, and completion transitions.
-- [ ] UT-019, UT-020, UT-021, UT-022, UT-023, UT-024, UT-025, UT-026, UT-027, UT-028 — disclosure authorization and conservative phase projections.
-- [ ] UT-029, UT-030, UT-031, UT-032, UT-033, UT-034, UT-035, UT-036, UT-037 — identifiers, revisions, idempotency, stable errors, and entity invariants.
-- [ ] UT-038, UT-039, UT-040, UT-041, UT-042, UT-043, UT-044, UT-045 — key custody, encrypted connection, migrations, integrity, and repository helpers.
+- [x] UT-009, UT-010, UT-011, UT-012, UT-013, UT-014, UT-015, UT-016, UT-017, UT-018 — encounter reducer states, evidence ordering, generation isolation, and completion transitions.
+- [x] UT-019, UT-020, UT-021, UT-022, UT-023, UT-024, UT-025, UT-026, UT-027, UT-028 — disclosure authorization and conservative phase projections.
+- [x] UT-029, UT-030, UT-031, UT-032, UT-033, UT-034, UT-035, UT-036, UT-037 — identifiers, revisions, idempotency, stable errors, and entity invariants.
+- [x] UT-038, UT-039, UT-040, UT-041, UT-042, UT-043, UT-044, UT-045 — key custody, encrypted connection, migrations, integrity, and repository helpers.
 - [ ] IT-233, IT-234, IT-278, IT-279 — encrypted bootstrap, fail-closed recovery, transaction rollback, and schema-version boundaries.
+
+## Verification Note
+
+- Local `npm run verify` passes, including IT-233, IT-234, IT-278, and the portable SQLCipher portion of IT-279.
+- Task completion remains pending until the Windows-only current-user DPAPI and packaged SQLCipher IT-279 test runs on both supported Windows release runners.
 
 ## Success Criteria
 
@@ -98,4 +103,3 @@ Cases assigned from `_tests.md`, the test contract — read each ID's full defin
 - The notebook cannot be read before successful current-user DPAPI key recovery and SQLCipher initialization.
 - Encounter and disclosure invariants hold under duplicate, stale, conflicting, interrupted, and concurrent inputs.
 - Migrations, repository mutations, FTS updates, and durable operation state are atomic and recoverable.
-

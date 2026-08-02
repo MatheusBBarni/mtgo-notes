@@ -105,4 +105,3 @@ Cases assigned from `_tests.md`, the test contract — read each ID's full defin
 - Users can capture, enrich, find, edit, and understand opponent knowledge entirely offline.
 - Identity correction is previewed, conflict-safe, and reversible without losing provenance.
 - Deleted content disappears from every read model immediately and cannot return through later background or portability workflows.
-

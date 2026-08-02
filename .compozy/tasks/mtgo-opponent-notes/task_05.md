@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Deliver official deck enrichment and local archetype classification
 type: backend
 complexity: high
@@ -32,16 +32,16 @@ Add consent-aware official MTGO deck enrichment and deterministic local archetyp
 
 ## Subtasks
 
-- [ ] 5.1 Complete and document the official MTGO access validation spike, including the fail-closed decision that controls automatic-provider enablement.
-- [ ] 5.2 Deliver the consent-aware official provider, allowlists, validation, retries, response binding, interactive fallback, and user confirmation.
-- [ ] 5.3 Persist immutable official source snapshots and complete canonical deck revisions with stable provenance and idempotency.
-- [ ] 5.4 Define and bundle signed, immutable classifier manifests, signature definitions, labeled corpus data, golden vectors, and release provenance.
-- [ ] 5.5 Implement exact signature-card matching, copy constraints, strict labels, stable tie behavior, and explainable results.
-- [ ] 5.6 Implement deterministic canonical vectors, cosine neighbors, weighted label confidence, thresholds, and `Unclassified` fallback.
-- [ ] 5.7 Persist append-only classification runs and expose current and historical classifier provenance through typed projections.
-- [ ] 5.8 Deliver resumable batch reclassification that yields to MTGO foreground activity and interactive operations.
-- [ ] 5.9 Add the official-deck confirmation and read-only archetype presentation surfaces without exposing an asset editor.
-- [ ] 5.10 Add provider fixtures, classifier golden vectors, deterministic benchmarks, and complete unit, integration, and end-to-end coverage.
+- [x] 5.1 Complete and document the official MTGO access validation spike, including the fail-closed decision that controls automatic-provider enablement.
+- [x] 5.2 Deliver the consent-aware official provider, allowlists, validation, retries, response binding, interactive fallback, and user confirmation.
+- [x] 5.3 Persist immutable official source snapshots and complete canonical deck revisions with stable provenance and idempotency.
+- [x] 5.4 Define and bundle signed, immutable classifier manifests, signature definitions, labeled corpus data, golden vectors, and release provenance.
+- [x] 5.5 Implement exact signature-card matching, copy constraints, strict labels, stable tie behavior, and explainable results.
+- [x] 5.6 Implement deterministic canonical vectors, cosine neighbors, weighted label confidence, thresholds, and `Unclassified` fallback.
+- [x] 5.7 Persist append-only classification runs and expose current and historical classifier provenance through typed projections.
+- [x] 5.8 Deliver resumable batch reclassification that yields to MTGO foreground activity and interactive operations.
+- [x] 5.9 Add the official-deck confirmation and read-only archetype presentation surfaces without exposing an asset editor.
+- [x] 5.10 Add provider fixtures, classifier golden vectors, deterministic benchmarks, and complete unit, integration, and end-to-end coverage.
 
 ## Implementation Details
 
@@ -86,13 +86,13 @@ Implement the TechSpec's “Public Deck Provider” and “Archetype Classifier�
 
 Cases assigned from `_tests.md`, the test contract — read each ID's full definition there before writing tests.
 
-- [ ] UT-046, UT-047, UT-048, UT-049, UT-050, UT-051, UT-052, UT-053, UT-054, UT-055, UT-056 — official provider validation, consent, response binding, retry, and interactive fallback behavior.
-- [ ] UT-057, UT-058, UT-059, UT-060, UT-061, UT-062, UT-063, UT-064, UT-065, UT-066, UT-067, UT-111 — signature constraints, canonical vectors, k-nearest-neighbors determinism, confidence, strict labels, and asset validation.
-- [ ] IT-091, IT-092, IT-093, IT-094, IT-095, IT-096, IT-097, IT-098, IT-099, IT-100 — provider consent, access modes, official lookup, retries, and interactive confirmation.
-- [ ] IT-181, IT-182, IT-183, IT-184, IT-185, IT-186, IT-187, IT-188, IT-189, IT-190 — signed asset loading, signature classification, fallback classification, explanations, and deterministic results.
-- [ ] IT-210, IT-211, IT-215, IT-229, IT-230 — immutable snapshot persistence, deck detail, provenance, and stale-result protection.
-- [ ] IT-248, IT-249, IT-261, IT-262, IT-270, IT-280 — read-only classifier UI, performance, reclassification yielding, and disabled-editor boundaries.
-- [ ] E2E-010 — official deck confirmation through local archetype classification and provenance display.
+- [x] UT-046, UT-047, UT-048, UT-049, UT-050, UT-051, UT-052, UT-053, UT-054, UT-055, UT-056 — official provider validation, consent, response binding, retry, and interactive fallback behavior.
+- [x] UT-057, UT-058, UT-059, UT-060, UT-061, UT-062, UT-063, UT-064, UT-065, UT-066, UT-067, UT-111 — signature constraints, canonical vectors, k-nearest-neighbors determinism, confidence, strict labels, and asset validation.
+- [x] IT-091, IT-092, IT-093, IT-094, IT-095, IT-096, IT-097, IT-098, IT-099, IT-100 — provider consent, access modes, official lookup, retries, and interactive confirmation.
+- [x] IT-181, IT-182, IT-183, IT-184, IT-185, IT-186, IT-187, IT-188, IT-189, IT-190 — signed asset loading, signature classification, fallback classification, explanations, and deterministic results.
+- [x] IT-210, IT-211, IT-215, IT-229, IT-230 — immutable snapshot persistence, deck detail, provenance, and stale-result protection.
+- [x] IT-248, IT-249, IT-261, IT-262, IT-270, IT-280 — read-only classifier UI, performance, reclassification yielding, and disabled-editor boundaries.
+- [x] E2E-010 — official deck confirmation through local archetype classification and provenance display.
 
 ## Success Criteria
 
@@ -100,4 +100,3 @@ Cases assigned from `_tests.md`, the test contract — read each ID's full defin
 - V1 never performs undocumented automatic scraping or sends data beyond the disclosed confirmed handle and format.
 - Every shown archetype is reproducible from an immutable deck revision and signed classifier version with a human-readable explanation.
 - Classifier rules are shipped and updateable only through trusted release mechanisms, with no in-app editing surface.
-

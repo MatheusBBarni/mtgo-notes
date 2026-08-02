@@ -1,0 +1,25 @@
+{
+  "provider": "official_mtgo",
+  "event": "Synthetic Modern Challenge",
+  "format": "Modern",
+  "publicationDate": 1753689600000,
+  "sourceUrl": "https://www.mtgo.com/decklists/synthetic",
+  "providerLabel": "Provider Burn",
+  "responseToken": "018f47a0-6df4-7abc-8def-0123456789ab",
+  "encounterGeneration": 1,
+  "cards": [
+    {
+      "oracleId": "oracle-mountain",
+      "displayName": "Mountain",
+      "zone": "main",
+      "quantity": 56,
+      "basicLand": true
+    },
+    {
+      "oracleId": "oracle-lightning-bolt",
+      "displayName": "Lightning Bolt",
+      "zone": "main",
+      "quantity": 4
+    }
+  ]
+}

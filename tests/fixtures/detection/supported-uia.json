@@ -1,0 +1,22 @@
+{
+  "window": {
+    "className": "SyntheticMtgoWindow",
+    "visibleTitle": "Magic Online",
+    "visible": true,
+    "minimized": false
+  },
+  "events": [
+    {
+      "sequence": 1,
+      "field": "opponent",
+      "value": "Opponent_42",
+      "confidence": 1.0
+    },
+    {
+      "sequence": 2,
+      "field": "phase",
+      "value": "game starting",
+      "confidence": 1.0
+    }
+  ]
+}

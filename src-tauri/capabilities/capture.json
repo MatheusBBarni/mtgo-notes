@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "capture-window",
+  "description": "Draft-only commands and replacement events for quick capture.",
+  "windows": ["capture"],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:window:allow-hide",
+    "allow-bootstrap",
+    "allow-save-observation",
+    "allow-discard-draft"
+  ]
+}

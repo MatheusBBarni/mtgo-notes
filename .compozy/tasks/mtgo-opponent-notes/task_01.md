@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Scaffold the secure multi-window desktop foundation
 type: infra
 complexity: high
@@ -30,16 +30,16 @@ Create the greenfield Tauri 2, React, TypeScript, and Rust workspace that every 
 
 ## Subtasks
 
-- [ ] 1.1 Establish the pinned frontend and Rust workspace, lockfiles, developer scripts, formatting, linting, type checking, and test runners.
-- [ ] 1.2 Create independent HTML and React bootstrap entrypoints for the main, overlay, and quick-capture windows.
-- [ ] 1.3 Define the initial Tauri window configuration, labels, lifecycle behavior, dimensions, and secure navigation policy.
-- [ ] 1.4 Build the shared design tokens and accessible desktop primitives specified by `DESIGN.md`.
-- [ ] 1.5 Define typed command results, application errors, caller identities, and versioned host-to-window replacement events.
-- [ ] 1.6 Add a safe Rust application bootstrap and command-registration seam for later domain services.
-- [ ] 1.7 Configure least-privilege per-window capabilities and automated checks that reject capability drift.
-- [ ] 1.8 Integrate the supplied Windows icons, bundled Inter font files, and required attribution/license material.
-- [ ] 1.9 Add scaffold-level unit and integration coverage for serialization, window identity, design tokens, and security configuration.
-- [ ] 1.10 Add a Windows x64 continuous-integration baseline that builds and tests the greenfield desktop shell.
+- [x] 1.1 Establish the pinned frontend and Rust workspace, lockfiles, developer scripts, formatting, linting, type checking, and test runners.
+- [x] 1.2 Create independent HTML and React bootstrap entrypoints for the main, overlay, and quick-capture windows.
+- [x] 1.3 Define the initial Tauri window configuration, labels, lifecycle behavior, dimensions, and secure navigation policy.
+- [x] 1.4 Build the shared design tokens and accessible desktop primitives specified by `DESIGN.md`.
+- [x] 1.5 Define typed command results, application errors, caller identities, and versioned host-to-window replacement events.
+- [x] 1.6 Add a safe Rust application bootstrap and command-registration seam for later domain services.
+- [x] 1.7 Configure least-privilege per-window capabilities and automated checks that reject capability drift.
+- [x] 1.8 Integrate the supplied Windows icons, bundled Inter font files, and required attribution/license material.
+- [x] 1.9 Add scaffold-level unit and integration coverage for serialization, window identity, design tokens, and security configuration.
+- [x] 1.10 Add a Windows x64 continuous-integration baseline that builds and tests the greenfield desktop shell.
 
 ## Implementation Details
 
@@ -82,9 +82,9 @@ Create the workspace and security seams described by the TechSpec's “Component
 
 Cases assigned from `_tests.md`, the test contract — read each ID's full definition there before writing tests.
 
-- [ ] UT-105, UT-106, UT-107, UT-108 — typed IPC envelope and stable application-error serialization.
-- [ ] UT-113, UT-114, UT-115, UT-116, UT-117, UT-118, UT-119, UT-120 — design tokens, accessible primitives, window identities, and configuration invariants.
-- [ ] IT-191, IT-192, IT-193, IT-272 — per-window capability isolation, secure bootstrap, and packaged configuration boundaries.
+- [x] UT-105, UT-106, UT-107, UT-108 — typed IPC envelope and stable application-error serialization.
+- [x] UT-113, UT-114, UT-115, UT-116, UT-117, UT-118, UT-119, UT-120 — design tokens, accessible primitives, window identities, and configuration invariants.
+- [x] IT-191, IT-192, IT-193, IT-272 — per-window capability isolation, secure bootstrap, and packaged configuration boundaries.
 
 ## Success Criteria
 
@@ -92,4 +92,3 @@ Cases assigned from `_tests.md`, the test contract — read each ID's full defin
 - All three window entrypoints build and start through the shared trusted-host composition boundary.
 - Automated checks demonstrate that renderer windows cannot acquire forbidden host capabilities.
 - The shared UI foundation matches the required visual tokens and accessibility floors from `DESIGN.md`.
-

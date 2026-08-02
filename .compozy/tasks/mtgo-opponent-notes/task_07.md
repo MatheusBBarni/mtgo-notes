@@ -103,4 +103,3 @@ Cases assigned from `_tests.md`, the test contract — read each ID's full defin
 - Default installation performs no telemetry, diagnostic upload, provider request, update check, classifier update check, or autostart action without the corresponding user choice.
 - Corrupt, unsigned, interrupted, or offline update paths preserve the last known-good application and classifier assets.
 - Packaged Windows evidence covers all supported operating systems, security boundaries, accessibility floors, and performance budgets required for V1 release.
-

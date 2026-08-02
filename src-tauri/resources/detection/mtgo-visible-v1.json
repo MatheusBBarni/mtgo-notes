@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "profileVersion": "2026.07.1",
+  "supportedClientVersions": ["current-windows-x64"],
+  "language": "en-US",
+  "opponentConfidenceThresholdMillis": 820,
+  "semanticLocators": {
+    "opponent": ["OpponentName", "MatchOpponent"],
+    "phase": ["DuelScene", "SideboardingScene", "MatchResults"],
+    "format": ["EventFormat"],
+    "game": ["GameNumber"],
+    "result": ["MatchResult"]
+  },
+  "ocrRegions": [
+    {
+      "field": "opponent",
+      "xMillis": 610,
+      "yMillis": 10,
+      "widthMillis": 350,
+      "heightMillis": 90
+    },
+    {
+      "field": "phase",
+      "xMillis": 350,
+      "yMillis": 0,
+      "widthMillis": 300,
+      "heightMillis": 100
+    }
+  ],
+  "signature": "ed25519:4c38FpexSHFMoutWek2JkxUCHteW7wDjS2XF+CBlYeyVfPeSEnSvKglsFUwsmcm9lWs/FuFEh7steuAPtdoXCQ=="
+}

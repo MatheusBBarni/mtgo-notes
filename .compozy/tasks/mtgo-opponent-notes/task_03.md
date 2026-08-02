@@ -109,4 +109,3 @@ Cases assigned from `_tests.md`, the test contract — read each ID's full defin
 - A user can move from first-run consent to a confirmed live opponent and save a note without opening the main window.
 - Restricted or uncertain gameplay never exposes forbidden history, even during reordered events or window transitions.
 - Detection and capture meet the TechSpec latency, resource, accessibility, and no-focus-steal budgets on supported packaged Windows builds.
-

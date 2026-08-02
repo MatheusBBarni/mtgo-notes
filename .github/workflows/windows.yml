@@ -1,0 +1,103 @@
+name: Windows x64
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: Windows 10/11 x64 build baseline
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      RUST_TARGET: x86_64-pc-windows-msvc
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use pinned Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install locked frontend dependencies
+        run: npm ci
+
+      - name: Install pinned Rust toolchain
+        run: rustup show
+
+      - name: Validate frontend and native foundation
+        run: npm run verify
+
+      - name: Run Windows target tests
+        run: npm run test:windows
+
+      - name: Build Windows x64 NSIS package
+        run: npm run build:windows
+
+      - name: Upload unsigned pull-request package
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64-nsis
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+
+  packaged-release:
+    name: Packaged ${{ matrix.os_name }} evidence
+    if: github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os_name: Windows 10 22H2 x64
+            runner: windows-10-22h2
+          - os_name: Windows 11 x64
+            runner: windows-11
+    runs-on: [self-hosted, windows, x64, "${{ matrix.runner }}"]
+    timeout-minutes: 60
+    env:
+      RUST_TARGET: x86_64-pc-windows-msvc
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use pinned Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run complete automated gate
+        run: npm run verify
+
+      - name: Build packaged Windows application
+        run: npm run build:windows
+
+      - name: Validate packaged SQLCipher and current-user DPAPI
+        run: >-
+          cargo test
+          --manifest-path src-tauri/Cargo.toml
+          --target x86_64-pc-windows-msvc
+          notebook::tests::it_279_packaged_sqlcipher_opens_migrates_and_backs_up_encrypted
+          -- --exact
+
+      - name: Validate package signature and release evidence boundary
+        shell: pwsh
+        run: ./tests/release/validate-windows.ps1 -OsName "${{ matrix.os_name }}"
+
+      - name: Upload release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-evidence-${{ matrix.runner }}
+          path: tests/release/evidence/
