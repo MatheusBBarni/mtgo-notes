@@ -38,6 +38,10 @@ describe("GitHub Release workflow contract", () => {
     resolve(process.cwd(), ".github/workflows/release.yml"),
     "utf8",
   );
+  const attributes = readFileSync(
+    resolve(process.cwd(), ".gitattributes"),
+    "utf8",
+  );
 
   test("manual dispatch creates a draft Windows release with the NSIS installer", () => {
     expect(workflow).toContain("workflow_dispatch:");
@@ -49,5 +53,6 @@ describe("GitHub Release workflow contract", () => {
     expect(workflow).toContain(
       "args: --target x86_64-pc-windows-msvc --bundles nsis",
     );
+    expect(attributes).toContain("* text=auto eol=lf");
   });
 });
