@@ -134,6 +134,45 @@ textarea:focus-visible,
   gap: var(--space-sm);
 }
 
+.main-workspace {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-md);
+}
+
+.main-workspace-nav-container {
+  min-width: 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.main-workspace-nav {
+  min-width: max-content;
+}
+
+.main-workspace-nav .tabs__tab {
+  min-height: 44px;
+  padding-inline: var(--space-md);
+  white-space: nowrap;
+}
+
+.main-workspace-nav .tabs__tab[data-selected="true"] {
+  font-weight: 500;
+}
+
+.main-workspace-panel {
+  min-width: 0;
+}
+
+.main-workspace-panel[data-inert] {
+  display: none;
+}
+
+.main-workspace-panel > .operational-settings,
+.main-workspace-panel > .portability-workspace {
+  margin-block: 0;
+}
+
 .notebook-layout {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
