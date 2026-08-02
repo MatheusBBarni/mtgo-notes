@@ -32,3 +32,22 @@ describe("Task 07 packaged Windows release contract", () => {
     expect(evidence).toContain("production Authenticode identity");
   });
 });
+
+describe("GitHub Release workflow contract", () => {
+  const workflow = readFileSync(
+    resolve(process.cwd(), ".github/workflows/release.yml"),
+    "utf8",
+  );
+
+  test("manual dispatch creates a draft Windows release with the NSIS installer", () => {
+    expect(workflow).toContain("workflow_dispatch:");
+    expect(workflow).toContain("contents: write");
+    expect(workflow).toContain("npm run verify");
+    expect(workflow).toContain("tauri-apps/tauri-action@v1");
+    expect(workflow).toContain("tagName: v__VERSION__");
+    expect(workflow).toContain("releaseDraft: true");
+    expect(workflow).toContain(
+      "args: --target x86_64-pc-windows-msvc --bundles nsis",
+    );
+  });
+});
