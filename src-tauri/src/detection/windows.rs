@@ -110,74 +110,65 @@ fn run_detection_worker(app: tauri::AppHandle, native_handle: u64, generation: u
     }
 
     let result = unsafe {
-        let automation: IUIAutomation = match CoCreateInstance(&CUIAutomation, None, CLSCTX_ALL) {
-            Ok(automation) => automation,
-            Err(_) => {
-                fail_closed(&app, generation);
-                CoUninitialize();
-                return;
-            }
-        };
-        let walker = match automation.ControlViewWalker() {
-            Ok(walker) => walker,
-            Err(_) => {
-                fail_closed(&app, generation);
-                CoUninitialize();
-                return;
-            }
-        };
-        let started = Instant::now();
-        let provider_session = crate::domain::EntityId::new().to_string();
-        let mut sequence = 0_u64;
-        let mut last_observed = BTreeMap::<ContextField, String>::new();
-
-        loop {
-            if !worker_is_current(&app, native_handle, generation) {
-                break Ok(());
-            }
-            let hwnd = HWND(native_handle as usize as *mut core::ffi::c_void);
-            let root = automation
-                .ElementFromHandle(hwnd)
+        (|| -> Result<(), RepoError> {
+            let automation: IUIAutomation = CoCreateInstance(&CUIAutomation, None, CLSCTX_ALL)
                 .map_err(|_| RepoError::ProviderUnavailable)?;
-            let locator_fields = app
-                .state::<DetectionRuntime>()
-                .engine
-                .lock()
-                .map_err(|_| RepoError::ProviderUnavailable)?
-                .semantic_locator_fields();
-            let mut evidence = collect_visible_evidence(&locator_fields, &walker, root)?;
-            let observed_fields = evidence
-                .iter()
-                .map(|(field, _)| *field)
-                .collect::<BTreeSet<_>>();
-            if !observed_fields.contains(&ContextField::Phase) {
-                evidence.push((ContextField::Phase, "gameplay".into()));
-            }
-            for (field, visible_text) in evidence {
-                if last_observed.get(&field) == Some(&visible_text) {
-                    continue;
+            let walker = automation
+                .ControlViewWalker()
+                .map_err(|_| RepoError::ProviderUnavailable)?;
+            let started = Instant::now();
+            let provider_session = crate::domain::EntityId::new().to_string();
+            let mut sequence = 0_u64;
+            let mut last_observed = BTreeMap::<ContextField, String>::new();
+
+            loop {
+                if !worker_is_current(&app, native_handle, generation) {
+                    return Ok(());
                 }
-                last_observed.insert(field, visible_text.clone());
-                sequence = sequence.saturating_add(1);
-                dispatch_evidence(
-                    &app,
-                    EvidenceInput {
-                        provider_session: provider_session.clone(),
-                        generation,
-                        sequence,
-                        monotonic_ms: started.elapsed().as_millis() as u64,
-                        field,
-                        visible_text,
-                        confidence: 1.0,
-                        provenance: EvidenceProvenance::Uia,
-                    },
-                );
+                let hwnd = HWND(native_handle as usize as *mut core::ffi::c_void);
+                let root = automation
+                    .ElementFromHandle(hwnd)
+                    .map_err(|_| RepoError::ProviderUnavailable)?;
+                let locator_fields = app
+                    .state::<DetectionRuntime>()
+                    .engine
+                    .lock()
+                    .map_err(|_| RepoError::ProviderUnavailable)?
+                    .semantic_locator_fields();
+                let mut evidence = collect_visible_evidence(&locator_fields, &walker, root)?;
+                let observed_fields = evidence
+                    .iter()
+                    .map(|(field, _)| *field)
+                    .collect::<BTreeSet<_>>();
+                if !observed_fields.contains(&ContextField::Phase) {
+                    evidence.push((ContextField::Phase, "gameplay".into()));
+                }
+                for (field, visible_text) in evidence {
+                    if last_observed.get(&field) == Some(&visible_text) {
+                        continue;
+                    }
+                    last_observed.insert(field, visible_text.clone());
+                    sequence = sequence.saturating_add(1);
+                    dispatch_evidence(
+                        &app,
+                        EvidenceInput {
+                            provider_session: provider_session.clone(),
+                            generation,
+                            sequence,
+                            monotonic_ms: started.elapsed().as_millis() as u64,
+                            field,
+                            visible_text,
+                            confidence: 1.0,
+                            provenance: EvidenceProvenance::Uia,
+                        },
+                    );
+                }
+                last_observed.retain(|field, _| {
+                    observed_fields.contains(field) || *field == ContextField::Phase
+                });
+                std::thread::sleep(POLL_INTERVAL);
             }
-            last_observed.retain(|field, _| {
-                observed_fields.contains(field) || *field == ContextField::Phase
-            });
-            std::thread::sleep(POLL_INTERVAL);
-        }
+        })()
     };
 
     if result.is_err() {
