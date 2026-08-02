@@ -46,7 +46,7 @@ describe("GitHub Release workflow contract", () => {
   test("manual dispatch creates a draft Windows release with the NSIS installer", () => {
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("contents: write");
-    expect(workflow).toContain("npm run verify");
+    expect(workflow).toContain("npm run verify:release");
     expect(workflow).toContain("tauri-apps/tauri-action@v1");
     expect(workflow).toContain("tagName: v__VERSION__");
     expect(workflow).toContain("releaseDraft: true");

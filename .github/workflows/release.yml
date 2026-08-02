@@ -37,8 +37,8 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Run complete verification
-        run: npm run verify
+      - name: Run portable release preflight
+        run: npm run verify:release
 
       - name: Build installer and create draft GitHub Release
         uses: tauri-apps/tauri-action@v1

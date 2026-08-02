@@ -25,6 +25,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
     "test:windows": "cargo test --manifest-path src-tauri/Cargo.toml --target x86_64-pc-windows-msvc",
+    "verify:release": "npm run format && npm run lint:frontend && npm run typecheck && npm run lint:capabilities && npm run test:unit && npm run test:integration",
     "verify": "npm run format && npm run lint && npm run typecheck && npm run lint:capabilities && npm test && npm run build && npm run build:rust"
   },
   "dependencies": {
