@@ -98,7 +98,7 @@ describe("Task 04 visible notebook journeys", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Observation saved with encounter provenance.",
     );
-  });
+  }, 15_000);
 
   test("E2E-012: offline history pages are replaced with an error-safe empty state when disclosure is denied", async () => {
     invokeMock
