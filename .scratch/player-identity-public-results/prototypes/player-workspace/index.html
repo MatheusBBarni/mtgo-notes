@@ -1,0 +1,1296 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MTGO Notes — Player workspace prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Inter Variable", "Segoe UI", system-ui, sans-serif;
+        font-size: 14px;
+        color: #333840;
+        background: #f8fafc;
+        --color-primary: #181d26;
+        --color-primary-active: #0d1218;
+        --color-ink: #181d26;
+        --color-body: #333840;
+        --color-muted: #41454d;
+        --color-hairline: #dddddd;
+        --color-border-strong: #9297a0;
+        --color-canvas: #ffffff;
+        --color-surface-soft: #f8fafc;
+        --color-surface-strong: #e0e2e6;
+        --color-focus: #458fff;
+        --color-success: #006400;
+        --color-success-border: #39bf45;
+        --color-info: #254fad;
+        --color-info-border: #458fff;
+        --color-destructive: #8c1d18;
+        --color-error-surface: #fff1f0;
+        --color-warning-surface: #fff8db;
+        --color-warning-border: #d9a441;
+        --space-xxs: 4px;
+        --space-xs: 8px;
+        --space-sm: 12px;
+        --space-md: 16px;
+        --space-lg: 24px;
+        --space-xl: 32px;
+        --radius-control: 6px;
+        --radius-card: 10px;
+        --radius-panel: 12px;
+        --shadow-minimal: 0 1px 2px rgb(24 29 38 / 8%);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        min-width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+      body {
+        background: var(--color-surface-soft);
+        color: var(--color-body);
+      }
+      button,
+      input {
+        font: inherit;
+      }
+      button,
+      input,
+      summary,
+      [tabindex] {
+        outline: none;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      summary:focus-visible,
+      [tabindex]:focus-visible {
+        box-shadow:
+          0 0 0 2px var(--color-canvas),
+          0 0 0 4px var(--color-focus);
+      }
+      button {
+        min-height: 40px;
+        border-radius: var(--radius-control);
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: not-allowed;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+      h1 {
+        margin-bottom: var(--space-xs);
+        color: var(--color-ink);
+        font-size: 24px;
+        font-weight: 500;
+      }
+      h2 {
+        margin-bottom: var(--space-xs);
+        color: var(--color-ink);
+        font-size: 20px;
+        font-weight: 500;
+      }
+      h3 {
+        margin-bottom: var(--space-xxs);
+        color: var(--color-ink);
+        font-size: 16px;
+        font-weight: 500;
+      }
+      p {
+        line-height: 1.45;
+      }
+      a {
+        color: #1b61c9;
+      }
+      .shell {
+        min-height: 100vh;
+        padding: var(--space-lg);
+      }
+      .app-header,
+      .section-heading,
+      .identity-row,
+      .result-head,
+      .row-actions,
+      .provider-row,
+      .import-bar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-md);
+      }
+      .app-header {
+        margin-bottom: var(--space-lg);
+      }
+      .subtitle,
+      .muted {
+        color: var(--color-muted);
+      }
+      .subtitle {
+        max-width: 68ch;
+        margin-bottom: 0;
+      }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-xs);
+        width: fit-content;
+        padding: var(--space-xxs) var(--space-xs);
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius-control);
+        background: var(--color-canvas);
+        color: var(--color-ink);
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .status::before {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-border-strong);
+        content: "";
+      }
+      .status.success {
+        border-color: var(--color-success-border);
+      }
+      .status.success::before {
+        background: var(--color-success);
+      }
+      .status.warning {
+        border-color: var(--color-warning-border);
+        background: var(--color-warning-surface);
+      }
+      .status.warning::before {
+        background: var(--color-warning-border);
+      }
+      .status.error {
+        border-color: var(--color-destructive);
+        background: var(--color-error-surface);
+      }
+      .status.error::before {
+        background: var(--color-destructive);
+      }
+      .tabs {
+        min-width: 0;
+        overflow-x: auto;
+        border-bottom: 1px solid var(--color-hairline);
+      }
+      .tabs-list {
+        display: flex;
+        min-width: max-content;
+        gap: var(--space-xxs);
+      }
+      .tab {
+        position: relative;
+        padding: var(--space-sm) var(--space-md);
+        border: 0;
+        background: transparent;
+        color: var(--color-muted);
+        font-weight: 500;
+      }
+      .tab[aria-selected="true"] {
+        color: var(--color-ink);
+      }
+      .tab[aria-selected="true"]::after {
+        position: absolute;
+        right: var(--space-md);
+        bottom: -1px;
+        left: var(--space-md);
+        height: 2px;
+        background: var(--color-primary);
+        content: "";
+      }
+      .workspace {
+        display: grid;
+        gap: var(--space-md);
+        padding-top: var(--space-md);
+      }
+      .review-controls {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: var(--space-sm) var(--space-md);
+        padding: var(--space-md);
+        border: 1px dashed var(--color-border-strong);
+        border-radius: var(--radius-card);
+        background: var(--color-canvas);
+      }
+      .review-controls strong {
+        color: var(--color-ink);
+      }
+      .state-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+      }
+      .state-button {
+        min-height: 32px;
+        padding: var(--space-xxs) var(--space-sm);
+        border: 1px solid var(--color-hairline);
+        background: var(--color-canvas);
+        color: var(--color-body);
+      }
+      .state-button[aria-pressed="true"] {
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        color: white;
+      }
+      .player-grid {
+        display: grid;
+        grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+        gap: var(--space-md);
+        align-items: start;
+      }
+      .panel {
+        padding: var(--space-lg);
+        border: 1px solid var(--color-hairline);
+        border-radius: var(--radius-card);
+        background: var(--color-canvas);
+        box-shadow: var(--shadow-minimal);
+      }
+      .stack {
+        display: grid;
+        gap: var(--space-md);
+      }
+      .compact-stack {
+        display: grid;
+        gap: var(--space-xs);
+      }
+      .divider {
+        height: 1px;
+        background: var(--color-hairline);
+      }
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+      }
+      .button {
+        padding: var(--space-xs) var(--space-md);
+        border: 1px solid var(--color-primary);
+        background: var(--color-primary);
+        color: white;
+        font-weight: 500;
+      }
+      .button:hover {
+        background: var(--color-primary-active);
+      }
+      .button:active {
+        background: var(--color-primary-active);
+      }
+      .button.secondary {
+        border-color: var(--color-hairline);
+        background: var(--color-canvas);
+        color: var(--color-ink);
+      }
+      .button.secondary:hover {
+        border-color: var(--color-border-strong);
+        background: var(--color-surface-soft);
+      }
+      .button.tertiary {
+        min-height: 32px;
+        padding: var(--space-xxs) var(--space-xs);
+        border-color: transparent;
+        background: transparent;
+        color: #1b61c9;
+      }
+      .button:disabled {
+        border-color: var(--color-border-strong);
+        background: var(--color-surface-strong);
+        color: var(--color-muted);
+      }
+      .field {
+        display: grid;
+        gap: var(--space-xs);
+      }
+      .field label {
+        color: var(--color-ink);
+        font-weight: 500;
+      }
+      .field input[type="text"] {
+        min-height: 44px;
+        width: 100%;
+        padding: var(--space-xs) var(--space-sm);
+        border: 1px solid var(--color-hairline);
+        border-radius: var(--radius-control);
+        background: var(--color-canvas);
+        color: var(--color-ink);
+      }
+      .helper {
+        margin: 0;
+        color: var(--color-muted);
+        font-size: 13px;
+      }
+      .notice {
+        padding: var(--space-md);
+        border: 1px solid var(--color-info-border);
+        border-radius: var(--radius-control);
+        background: #f2f7ff;
+      }
+      .notice.warning {
+        border-color: var(--color-warning-border);
+        background: var(--color-warning-surface);
+      }
+      .notice.error {
+        border-color: var(--color-destructive);
+        background: var(--color-error-surface);
+      }
+      .notice p:last-child {
+        margin-bottom: 0;
+      }
+      .identity-value {
+        color: var(--color-ink);
+        font-size: 18px;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+      }
+      .provider-row {
+        padding-block: var(--space-xs);
+        border-bottom: 1px solid var(--color-hairline);
+      }
+      .provider-row:last-child {
+        border-bottom: 0;
+      }
+      .provider-meta {
+        display: grid;
+        gap: var(--space-xxs);
+        min-width: 0;
+      }
+      .provider-meta span {
+        color: var(--color-muted);
+        font-size: 13px;
+      }
+      details {
+        border-top: 1px solid var(--color-hairline);
+        padding-top: var(--space-sm);
+      }
+      summary {
+        width: fit-content;
+        cursor: pointer;
+        color: #1b61c9;
+      }
+      .consent-copy {
+        display: grid;
+        gap: var(--space-sm);
+        padding-top: var(--space-sm);
+      }
+      .check-row {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        line-height: 1.45;
+      }
+      .check-row input {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+        margin-top: 1px;
+        accent-color: var(--color-primary);
+      }
+      .results-panel {
+        min-width: 0;
+      }
+      .results-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-md);
+        padding-bottom: var(--space-md);
+        border-bottom: 1px solid var(--color-hairline);
+      }
+      .results-toolbar p {
+        margin-bottom: 0;
+      }
+      .candidate-list,
+      .evidence-list {
+        display: grid;
+        gap: var(--space-sm);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .candidate {
+        display: grid;
+        gap: var(--space-sm);
+        padding: var(--space-md);
+        border: 1px solid var(--color-hairline);
+        border-radius: var(--radius-control);
+      }
+      .candidate.selected {
+        border-color: var(--color-info-border);
+        background: #f8fbff;
+      }
+      .candidate-main {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: var(--space-sm);
+        align-items: start;
+      }
+      .candidate-main input {
+        width: 18px;
+        height: 18px;
+        margin-top: var(--space-xxs);
+        accent-color: var(--color-primary);
+      }
+      .candidate-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-xs) var(--space-md);
+        color: var(--color-muted);
+        font-size: 13px;
+      }
+      .field-options {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-xs);
+        padding: var(--space-sm);
+        background: var(--color-surface-soft);
+        border-radius: var(--radius-control);
+      }
+      .field-options label {
+        display: flex;
+        gap: var(--space-xs);
+        align-items: center;
+      }
+      .field-options input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--color-primary);
+      }
+      .import-bar {
+        position: sticky;
+        bottom: var(--space-md);
+        align-items: center;
+        padding: var(--space-sm) var(--space-md);
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius-control);
+        background: var(--color-canvas);
+        box-shadow: 0 4px 16px rgb(24 29 38 / 12%);
+      }
+      .import-bar p {
+        margin: 0;
+      }
+      .evidence-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--space-md);
+        padding: var(--space-sm) 0;
+        border-bottom: 1px solid var(--color-hairline);
+      }
+      .evidence-item:last-child {
+        border-bottom: 0;
+      }
+      .evidence-item p {
+        margin: var(--space-xxs) 0 0;
+        color: var(--color-muted);
+        font-size: 13px;
+      }
+      .progress {
+        height: 8px;
+        overflow: hidden;
+        border-radius: var(--radius-control);
+        background: var(--color-surface-strong);
+      }
+      .progress span {
+        display: block;
+        width: 54%;
+        height: 100%;
+        background: var(--color-info);
+        animation: progress 1.4s ease-in-out infinite alternate;
+      }
+      @keyframes progress {
+        from {
+          width: 28%;
+        }
+        to {
+          width: 72%;
+        }
+      }
+      .hidden {
+        display: none !important;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      @media (max-width: 900px) {
+        .player-grid {
+          grid-template-columns: 1fr;
+        }
+        .review-controls {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 620px) {
+        .shell {
+          padding: var(--space-md);
+        }
+        .app-header,
+        .section-heading,
+        .identity-row,
+        .results-toolbar,
+        .import-bar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .field-options {
+          grid-template-columns: 1fr;
+        }
+        .candidate-main {
+          grid-template-columns: auto minmax(0, 1fr);
+        }
+        .candidate-main .status {
+          grid-column: 2;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="app-header">
+        <div>
+          <h1>MTGO Opponent Notes</h1>
+          <p class="subtitle">
+            Your private, local notebook is ready. Public results are contacted
+            only after an explicit action and source-specific consent.
+          </p>
+        </div>
+        <span class="status success">Ready</span>
+      </header>
+
+      <nav class="tabs" aria-label="Workspace sections">
+        <div class="tabs-list" role="tablist" aria-label="Workspace sections">
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            tabindex="-1"
+            data-demo-message="Only the Player tab is included in this prototype."
+          >
+            Settings
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            tabindex="-1"
+            data-demo-message="Only the Player tab is included in this prototype."
+          >
+            Detection
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            tabindex="-1"
+            data-demo-message="Only the Player tab is included in this prototype."
+          >
+            Live match
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            tabindex="-1"
+            data-demo-message="Only the Player tab is included in this prototype."
+          >
+            Deck context
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            tabindex="-1"
+            data-demo-message="Only the Player tab is included in this prototype."
+          >
+            Notebook
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="true"
+            aria-controls="player-panel"
+            id="player-tab"
+          >
+            Player
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            tabindex="-1"
+            data-demo-message="Only the Player tab is included in this prototype."
+          >
+            Backup &amp; export
+          </button>
+        </div>
+      </nav>
+
+      <section
+        class="workspace"
+        id="player-panel"
+        role="tabpanel"
+        aria-labelledby="player-tab"
+      >
+        <aside class="review-controls" aria-label="Prototype review controls">
+          <div>
+            <strong>Prototype states</strong>
+            <p class="helper">Review aid, not product chrome</p>
+          </div>
+          <div class="state-list">
+            <button
+              class="state-button"
+              data-state="first-use"
+              aria-pressed="false"
+            >
+              First use
+            </button>
+            <button
+              class="state-button"
+              data-state="consent"
+              aria-pressed="false"
+            >
+              Consent
+            </button>
+            <button
+              class="state-button"
+              data-state="ready"
+              aria-pressed="false"
+            >
+              Ready
+            </button>
+            <button
+              class="state-button"
+              data-state="loading"
+              aria-pressed="false"
+            >
+              Loading
+            </button>
+            <button
+              class="state-button"
+              data-state="candidates"
+              aria-pressed="true"
+            >
+              Candidates
+            </button>
+            <button
+              class="state-button"
+              data-state="empty"
+              aria-pressed="false"
+            >
+              Empty
+            </button>
+            <button
+              class="state-button"
+              data-state="failure"
+              aria-pressed="false"
+            >
+              Failure
+            </button>
+            <button
+              class="state-button"
+              data-state="nickname"
+              aria-pressed="false"
+            >
+              Nickname change
+            </button>
+            <button
+              class="state-button"
+              data-state="imported"
+              aria-pressed="false"
+            >
+              Imported
+            </button>
+          </div>
+        </aside>
+
+        <div class="section-heading">
+          <div>
+            <h2>Player</h2>
+            <p class="muted">
+              Manage your local MTGO identity and source-attributed public
+              results.
+            </p>
+          </div>
+          <span class="status" id="workspace-status">2 results to review</span>
+        </div>
+
+        <div class="player-grid">
+          <aside class="stack" aria-label="Player identity and sources">
+            <section class="panel stack" aria-labelledby="identity-heading">
+              <div class="identity-row">
+                <div>
+                  <h2 id="identity-heading">Player identity</h2>
+                  <span class="status success" id="identity-status"
+                    >Saved locally</span
+                  >
+                </div>
+                <button class="button tertiary" id="edit-identity">
+                  Edit nickname
+                </button>
+              </div>
+              <div id="identity-summary">
+                <div class="identity-value">MatheusBarni</div>
+                <p class="helper">
+                  Used only for explicit public lookups. This is not an MTGO
+                  sign-in.
+                </p>
+              </div>
+              <form class="field hidden" id="identity-form">
+                <label for="nickname">MTGO nickname</label>
+                <input
+                  id="nickname"
+                  name="nickname"
+                  type="text"
+                  value="MatheusBarni"
+                  autocomplete="off"
+                  required
+                />
+                <p class="helper" id="identity-help">
+                  Saving changes only this notebook. It never starts a lookup.
+                </p>
+                <div class="notice warning hidden" id="nickname-warning">
+                  <strong>Existing evidence will not change.</strong>
+                  <p>
+                    Old imports keep the nickname MatheusBarni. New lookups use
+                    the saved nickname.
+                  </p>
+                </div>
+                <div class="button-row">
+                  <button class="button" type="submit">Save nickname</button
+                  ><button
+                    class="button secondary"
+                    type="button"
+                    id="cancel-identity"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section class="panel stack" aria-labelledby="sources-heading">
+              <div>
+                <h2 id="sources-heading">Public sources</h2>
+                <p class="helper">
+                  Each external destination has separate consent.
+                </p>
+              </div>
+              <div class="compact-stack">
+                <div class="provider-row">
+                  <div class="provider-meta">
+                    <strong>Daybreak Census</strong
+                    ><span>No nickname leaves this app</span>
+                  </div>
+                  <span class="status success" id="census-status"
+                    >Consent on</span
+                  >
+                </div>
+                <details id="consent-details">
+                  <summary>Review Census consent</summary>
+                  <div class="consent-copy">
+                    <p>
+                      Lookup sends only the fixed MOCS leaderboard scope. Your
+                      nickname stays local and is matched after the response is
+                      validated.
+                    </p>
+                    <label class="check-row"
+                      ><input type="checkbox" id="census-consent" checked />
+                      Allow Census lookup for this disclosure version</label
+                    >
+                    <button
+                      class="button secondary"
+                      type="button"
+                      id="save-consent"
+                    >
+                      Save Census consent
+                    </button>
+                  </div>
+                </details>
+                <div class="provider-row">
+                  <div class="provider-meta">
+                    <strong>Official MTGO decklists</strong
+                    ><span>Opens an exact search in your browser</span>
+                  </div>
+                  <button
+                    class="button tertiary"
+                    type="button"
+                    data-demo-message="The trusted host would open the exact official MTGO route after consent."
+                  >
+                    Open source
+                  </button>
+                </div>
+                <div class="provider-row">
+                  <div class="provider-meta">
+                    <strong>MTGTop8</strong
+                    ><span>Browser corroboration only</span>
+                  </div>
+                  <button
+                    class="button tertiary"
+                    type="button"
+                    data-demo-message="MTGTop8 uses separate browser-handoff consent."
+                  >
+                    Review consent
+                  </button>
+                </div>
+              </div>
+            </section>
+          </aside>
+
+          <div class="stack results-panel">
+            <section class="panel stack" aria-labelledby="results-heading">
+              <div class="results-toolbar">
+                <div>
+                  <h2 id="results-heading">Find public results</h2>
+                  <p class="muted" id="results-description">
+                    Exact nickname match in Daybreak Census. Review candidates
+                    before anything is saved.
+                  </p>
+                </div>
+                <div class="button-row">
+                  <button class="button" type="button" id="lookup-button">
+                    Look up results</button
+                  ><button
+                    class="button secondary hidden"
+                    type="button"
+                    id="cancel-lookup"
+                  >
+                    Cancel lookup
+                  </button>
+                </div>
+              </div>
+
+              <div class="notice hidden" id="state-notice" role="status"></div>
+              <div class="hidden" id="loading-state" aria-live="polite">
+                <div class="compact-stack">
+                  <strong>Checking Daybreak Census</strong
+                  ><span class="muted"
+                    >Validating the fixed MOCS scope and exact local nickname
+                    match.</span
+                  >
+                  <div class="progress" aria-hidden="true"><span></span></div>
+                </div>
+              </div>
+
+              <div class="stack" id="candidate-state">
+                <div class="result-head">
+                  <div>
+                    <h3>2 exact matches need review</h3>
+                    <p class="helper">
+                      Choose results and fields to keep. Source identity and
+                      attribution are always saved.
+                    </p>
+                  </div>
+                  <span class="status">Preview expires in 14 min</span>
+                </div>
+                <ul class="candidate-list">
+                  <li class="candidate selected">
+                    <div class="candidate-main">
+                      <input
+                        type="checkbox"
+                        class="candidate-check"
+                        id="candidate-one"
+                        checked
+                        aria-label="Select MOCS Season 3 leaderboard result"
+                      />
+                      <div>
+                        <label for="candidate-one"
+                          ><strong>MOCS Season 3 leaderboard</strong></label
+                        >
+                        <div class="candidate-meta">
+                          <span>MatheusBarni · exact match</span
+                          ><span>Observed 3 Aug 2026</span
+                          ><a
+                            href="https://www.mtgo.com/"
+                            target="_blank"
+                            rel="noreferrer"
+                            >Daybreak Census source</a
+                          >
+                        </div>
+                      </div>
+                      <span class="status success">New</span>
+                    </div>
+                    <details open>
+                      <summary>Choose fields to save</summary>
+                      <div class="field-options">
+                        <label
+                          ><input type="checkbox" checked /> Total points:
+                          42</label
+                        ><label
+                          ><input type="checkbox" checked /> Top 8 finishes:
+                          2</label
+                        ><label
+                          ><input type="checkbox" checked /> Best score:
+                          9</label
+                        >
+                      </div>
+                    </details>
+                  </li>
+                  <li class="candidate selected">
+                    <div class="candidate-main">
+                      <input
+                        type="checkbox"
+                        class="candidate-check"
+                        id="candidate-two"
+                        checked
+                        aria-label="Select MOCS Season 2 leaderboard result"
+                      />
+                      <div>
+                        <label for="candidate-two"
+                          ><strong>MOCS Season 2 leaderboard</strong></label
+                        >
+                        <div class="candidate-meta">
+                          <span>MatheusBarni · exact match</span
+                          ><span>Observed 3 Aug 2026</span
+                          ><a
+                            href="https://www.mtgo.com/"
+                            target="_blank"
+                            rel="noreferrer"
+                            >Daybreak Census source</a
+                          >
+                        </div>
+                      </div>
+                      <span class="status warning">Changed</span>
+                    </div>
+                    <details>
+                      <summary>Choose fields to save</summary>
+                      <div class="field-options">
+                        <label
+                          ><input type="checkbox" checked /> Total points:
+                          35</label
+                        ><label
+                          ><input type="checkbox" /> Top 8 finishes: 1</label
+                        ><label
+                          ><input type="checkbox" checked /> Best score:
+                          8</label
+                        >
+                      </div>
+                    </details>
+                  </li>
+                </ul>
+                <div class="import-bar">
+                  <p>
+                    <strong id="selection-count">2 results selected</strong
+                    ><br /><span class="helper"
+                      >Imports are read-only and keep their source.</span
+                    >
+                  </p>
+                  <button class="button" id="import-button" type="button">
+                    Import selected results
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="panel stack"
+              aria-labelledby="evidence-heading"
+              id="evidence-panel"
+            >
+              <div class="section-heading">
+                <div>
+                  <h2 id="evidence-heading">Saved evidence</h2>
+                  <p class="helper">
+                    Read-only snapshots remain available when providers are off
+                    or unavailable.
+                  </p>
+                </div>
+                <button
+                  class="button secondary"
+                  id="refresh-button"
+                  type="button"
+                >
+                  Refresh results
+                </button>
+              </div>
+              <ul class="evidence-list">
+                <li class="evidence-item">
+                  <div>
+                    <strong>MOCS Season 1 leaderboard</strong>
+                    <p>
+                      Daybreak Census · Found for MatheusBarni · Imported 20 Jul
+                      2026
+                    </p>
+                  </div>
+                  <button
+                    class="button tertiary"
+                    type="button"
+                    data-demo-message="A read-only evidence detail would show frozen source and selection provenance."
+                  >
+                    View evidence
+                  </button>
+                </li>
+                <li class="evidence-item">
+                  <div>
+                    <strong>Modern Challenge 32</strong>
+                    <p>
+                      Official MTGO decklist · Entered from official source ·
+                      Imported 8 Jun 2026
+                    </p>
+                  </div>
+                  <button
+                    class="button tertiary"
+                    type="button"
+                    data-demo-message="A read-only evidence detail would show frozen source and selection provenance."
+                  >
+                    View evidence
+                  </button>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </div>
+        <div class="sr-only" aria-live="polite" id="live-region"></div>
+      </section>
+    </main>
+
+    <script>
+      const stateButtons = [...document.querySelectorAll("[data-state]")];
+      const identityForm = document.querySelector("#identity-form");
+      const identitySummary = document.querySelector("#identity-summary");
+      const identityStatus = document.querySelector("#identity-status");
+      const editIdentity = document.querySelector("#edit-identity");
+      const nicknameWarning = document.querySelector("#nickname-warning");
+      const consentDetails = document.querySelector("#consent-details");
+      const censusStatus = document.querySelector("#census-status");
+      const censusConsent = document.querySelector("#census-consent");
+      const candidateState = document.querySelector("#candidate-state");
+      const loadingState = document.querySelector("#loading-state");
+      const stateNotice = document.querySelector("#state-notice");
+      const lookupButton = document.querySelector("#lookup-button");
+      const cancelLookup = document.querySelector("#cancel-lookup");
+      const evidencePanel = document.querySelector("#evidence-panel");
+      const workspaceStatus = document.querySelector("#workspace-status");
+      const liveRegion = document.querySelector("#live-region");
+      const presets = {
+        "first-use": {
+          status: "Identity needed",
+          identity: "empty",
+          consent: false,
+          content: "first",
+        },
+        consent: {
+          status: "Consent needed",
+          identity: "saved",
+          consent: false,
+          content: "consent",
+        },
+        ready: {
+          status: "Ready to look up",
+          identity: "saved",
+          consent: true,
+          content: "ready",
+        },
+        loading: {
+          status: "Lookup in progress",
+          identity: "saved",
+          consent: true,
+          content: "loading",
+        },
+        candidates: {
+          status: "2 results to review",
+          identity: "saved",
+          consent: true,
+          content: "candidates",
+        },
+        empty: {
+          status: "No exact matches",
+          identity: "saved",
+          consent: true,
+          content: "empty",
+        },
+        failure: {
+          status: "Census unavailable",
+          identity: "saved",
+          consent: true,
+          content: "failure",
+        },
+        nickname: {
+          status: "Nickname not saved",
+          identity: "nickname",
+          consent: true,
+          content: "ready",
+        },
+        imported: {
+          status: "Results imported",
+          identity: "saved",
+          consent: true,
+          content: "imported",
+        },
+      };
+      function announce(message) {
+        liveRegion.textContent = message;
+      }
+      function notice(kind, title, body, actions = "") {
+        stateNotice.className = `notice ${kind}`.trim();
+        stateNotice.innerHTML = `<strong>${title}</strong><p>${body}</p>${actions}`;
+      }
+      function setState(name) {
+        const preset = presets[name];
+        stateButtons.forEach((button) =>
+          button.setAttribute(
+            "aria-pressed",
+            String(button.dataset.state === name),
+          ),
+        );
+        workspaceStatus.textContent = preset.status;
+        workspaceStatus.className =
+          `status ${name === "failure" ? "error" : name === "empty" || name === "consent" ? "warning" : name === "imported" ? "success" : ""}`.trim();
+        identityForm.classList.toggle(
+          "hidden",
+          preset.identity !== "nickname" && preset.identity !== "empty",
+        );
+        identitySummary.classList.toggle(
+          "hidden",
+          preset.identity === "nickname" || preset.identity === "empty",
+        );
+        identityStatus.classList.toggle("hidden", preset.identity === "empty");
+        editIdentity.classList.toggle("hidden", preset.identity === "empty");
+        nicknameWarning.classList.toggle(
+          "hidden",
+          preset.identity !== "nickname",
+        );
+        document.querySelector("#nickname").value =
+          preset.identity === "empty" ? "" : "MatheusBarni";
+        censusConsent.checked = preset.consent;
+        censusStatus.textContent = preset.consent
+          ? "Consent on"
+          : "Consent off";
+        censusStatus.className = `status ${preset.consent ? "success" : "warning"}`;
+        consentDetails.open = name === "consent";
+        candidateState.classList.toggle(
+          "hidden",
+          preset.content !== "candidates",
+        );
+        loadingState.classList.toggle("hidden", preset.content !== "loading");
+        cancelLookup.classList.toggle("hidden", preset.content !== "loading");
+        lookupButton.classList.toggle("hidden", preset.content === "loading");
+        evidencePanel.classList.toggle("hidden", preset.content === "first");
+        stateNotice.className = "hidden";
+        if (preset.content === "first")
+          notice(
+            "",
+            "Save your MTGO nickname locally",
+            "This creates one Player identity in this notebook. Use the labeled field beside this message. Saving never contacts a public source.",
+          );
+        if (preset.content === "consent")
+          notice(
+            "warning",
+            "Census lookup is off",
+            "Review what the fixed Census request sends, then enable it. Your nickname is not transmitted.",
+          );
+        if (preset.content === "ready")
+          notice(
+            "",
+            "No lookup has started",
+            "Run an explicit lookup when you want to check the enabled source. Existing evidence stays unchanged.",
+          );
+        if (preset.content === "empty")
+          notice(
+            "warning",
+            "No exact matches in Daybreak Census",
+            "The fixed MOCS scope returned no exact match for MatheusBarni at 18:31 on 3 Aug 2026. This does not mean no public results exist elsewhere.",
+            '<div class="button-row"><button class="button" type="button" id="retry-empty">Try lookup again</button><button class="button secondary" type="button" data-demo-message="The trusted host would open the exact official MTGO route after consent.">Open MTGO decklists</button></div>',
+          );
+        if (preset.content === "failure")
+          notice(
+            "error",
+            "Daybreak Census is unavailable",
+            "No saved evidence changed. Try again after 18:42, or use an official source without enabling another provider automatically.",
+            '<div class="button-row"><button class="button" type="button" id="retry-failure">Try lookup again</button><button class="button secondary" type="button" data-demo-message="A manual official-source form would validate the exact URL without fetching it.">Add from official URL</button></div>',
+          );
+        if (preset.content === "imported")
+          notice(
+            "",
+            "2 results imported",
+            "The selected fields are now read-only evidence. Refresh will preview only new or changed source statements.",
+          );
+        announce(`Prototype state: ${preset.status}`);
+      }
+      stateButtons.forEach((button) =>
+        button.addEventListener("click", () => setState(button.dataset.state)),
+      );
+      editIdentity.addEventListener("click", () => setState("nickname"));
+      document
+        .querySelector("#cancel-identity")
+        .addEventListener("click", () => setState("candidates"));
+      identityForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        setState("ready");
+        announce("Nickname saved locally. No lookup started.");
+      });
+      document.querySelector("#save-consent").addEventListener("click", () => {
+        setState(censusConsent.checked ? "ready" : "consent");
+        announce(
+          censusConsent.checked
+            ? "Census consent saved."
+            : "Census consent remains off.",
+        );
+      });
+      lookupButton.addEventListener("click", () =>
+        setState(censusConsent.checked ? "loading" : "consent"),
+      );
+      cancelLookup.addEventListener("click", () => {
+        setState("ready");
+        announce("Lookup cancelled. No evidence changed.");
+      });
+      document
+        .querySelector("#refresh-button")
+        .addEventListener("click", () => setState("loading"));
+      document
+        .querySelector("#import-button")
+        .addEventListener("click", () => setState("imported"));
+      stateNotice.addEventListener("click", (event) => {
+        if (
+          event.target.id === "retry-empty" ||
+          event.target.id === "retry-failure"
+        )
+          setState("loading");
+      });
+      document.addEventListener("click", (event) => {
+        const message = event.target.closest("[data-demo-message]")?.dataset
+          .demoMessage;
+        if (message) announce(message);
+      });
+      document.querySelectorAll(".candidate-check").forEach((checkbox) =>
+        checkbox.addEventListener("change", () => {
+          checkbox
+            .closest(".candidate")
+            .classList.toggle("selected", checkbox.checked);
+          const count = document.querySelectorAll(
+            ".candidate-check:checked",
+          ).length;
+          document.querySelector("#selection-count").textContent =
+            `${count} ${count === 1 ? "result" : "results"} selected`;
+          document.querySelector("#import-button").disabled = count === 0;
+          announce(`${count} results selected.`);
+        }),
+      );
+      setState("candidates");
+    </script>
+  </body>
+</html>
