@@ -46,6 +46,7 @@ pub enum PlayerErrorCode {
     PreviewExpired,
     PreviewMismatch,
     BrowserOpenFailed,
+    DeletionPreviewStale,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -148,6 +149,7 @@ pub enum PlayerCommandKind {
     ManualPreview,
     Import,
     Selection,
+    Delete,
     BrowserHandoff,
 }
 
@@ -326,6 +328,25 @@ impl PlayerPublicResultsRuntime {
         state.active = None;
         state.ephemeral_replay.clear();
         state.manual_previews.clear();
+        Ok(())
+    }
+
+    /// Restore/deletion boundary: durable Player data may remain, but every
+    /// outbound route starts disabled and all transient authority is fenced.
+    pub fn reset_disabled(&self) -> Result<(), PlayerError> {
+        let mut state = self.state.lock().map_err(|_| {
+            PlayerError::new(PlayerErrorCode::ProviderUnavailable, PlayerRecovery::Retry)
+        })?;
+        state.provider_mode = CensusProviderMode::Disabled;
+        state.configuration_version = None;
+        state.configuration_fingerprint = None;
+        state.configuration_expires_at = None;
+        state.scope = None;
+        state.consents.clear();
+        state.active = None;
+        state.ephemeral_replay.clear();
+        state.manual_previews.clear();
+        state.generation = state.generation.saturating_add(1);
         Ok(())
     }
 

@@ -231,6 +231,10 @@ fn write_export(
             .and_then(|_| writeln!(writer))
             .map_err(|_| RepoError::DestinationUnwritable)?;
 
+        if matches!(scope, ExportScope::CompleteNotebook) {
+            write_player_export(transaction, cancellation, writer)?;
+        }
+
         let mut counts = ExportCounts::default();
         let (profile_sql, profile_parameter) = match scope {
             ExportScope::CompleteNotebook => (
@@ -568,6 +572,217 @@ fn write_decks(
             .map_err(|_| RepoError::DestinationUnwritable)?;
         }
     }
+    Ok(())
+}
+
+fn write_player_export(
+    transaction: &rusqlite::Transaction<'_>,
+    cancellation: &CancellationToken,
+    writer: &mut impl Write,
+) -> Result<(), RepoError> {
+    let identity = transaction
+        .query_row(
+            "SELECT id, display_nickname, normalized_nickname, created_at, updated_at, revision
+             FROM player_identities WHERE singleton = 1",
+            [],
+            |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, i64>(3)?,
+                    row.get::<_, i64>(4)?,
+                    row.get::<_, i64>(5)?,
+                ))
+            },
+        )
+        .optional()
+        .map_err(|_| RepoError::NotebookInvalid)?;
+    let Some((identity_id, display, normalized, created_at, updated_at, revision)) = identity
+    else {
+        writeln!(writer, "Player: none").map_err(|_| RepoError::DestinationUnwritable)?;
+        return Ok(());
+    };
+    writeln!(writer, "Player identity: {display}")
+        .and_then(|_| writeln!(writer, "  Stable ID: {identity_id}"))
+        .and_then(|_| writeln!(writer, "  Normalized nickname: {normalized}"))
+        .and_then(|_| writeln!(writer, "  Created (UTC ms): {created_at}"))
+        .and_then(|_| writeln!(writer, "  Updated (UTC ms): {updated_at}"))
+        .and_then(|_| writeln!(writer, "  Revision: {revision}"))
+        .map_err(|_| RepoError::DestinationUnwritable)?;
+
+    let mut evidence = transaction
+        .prepare(
+            "SELECT id, kind, provenance_mode, provider_id, attribution_url,
+                    canonical_source_url, lookup_nickname, source_nickname,
+                    exact_match_rule, scope_json, observed_at, imported_at,
+                    source_key, source_digest, preview_digest, payload_json,
+                    selected_fields_json, supersedes_evidence_id
+             FROM player_evidence WHERE player_identity_id = ?1
+             ORDER BY imported_at, id",
+        )
+        .map_err(|_| RepoError::NotebookInvalid)?;
+    let evidence_rows = evidence
+        .query_map([&identity_id], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, Option<String>>(5)?,
+                row.get::<_, String>(6)?,
+                row.get::<_, String>(7)?,
+                row.get::<_, String>(8)?,
+                row.get::<_, String>(9)?,
+                row.get::<_, i64>(10)?,
+                row.get::<_, i64>(11)?,
+                row.get::<_, String>(12)?,
+                row.get::<_, String>(13)?,
+                row.get::<_, String>(14)?,
+                row.get::<_, String>(15)?,
+                row.get::<_, String>(16)?,
+                row.get::<_, Option<String>>(17)?,
+            ))
+        })
+        .map_err(|_| RepoError::NotebookInvalid)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| RepoError::NotebookInvalid)?;
+    for (
+        id,
+        kind,
+        provenance,
+        provider,
+        attribution,
+        canonical,
+        lookup_nickname,
+        source_nickname,
+        exact_rule,
+        scope,
+        observed_at,
+        imported_at,
+        source_key,
+        source_digest,
+        preview_digest,
+        payload,
+        selected,
+        supersedes,
+    ) in evidence_rows
+    {
+        if cancellation.is_cancelled() {
+            return Err(RepoError::InvalidTransition);
+        }
+        writeln!(writer, "  Player evidence: {id}")
+            .and_then(|_| writeln!(writer, "    Kind: {kind}; provenance: {provenance}"))
+            .and_then(|_| writeln!(writer, "    Provider: {provider}"))
+            .and_then(|_| writeln!(writer, "    Attribution: {attribution}"))
+            .and_then(|_| {
+                writeln!(
+                    writer,
+                    "    Canonical source: {}",
+                    canonical.unwrap_or_default()
+                )
+            })
+            .and_then(|_| writeln!(writer, "    Lookup nickname: {lookup_nickname}"))
+            .and_then(|_| writeln!(writer, "    Source nickname: {source_nickname}"))
+            .and_then(|_| writeln!(writer, "    Exact match rule: {exact_rule}"))
+            .and_then(|_| writeln!(writer, "    Scope: {scope}"))
+            .and_then(|_| {
+                writeln!(
+                    writer,
+                    "    Observed/imported (UTC ms): {observed_at}/{imported_at}"
+                )
+            })
+            .and_then(|_| writeln!(writer, "    Source key: {source_key}"))
+            .and_then(|_| writeln!(writer, "    Source digest: {source_digest}"))
+            .and_then(|_| writeln!(writer, "    Preview digest: {preview_digest}"))
+            .and_then(|_| writeln!(writer, "    Retained payload: {payload}"))
+            .and_then(|_| writeln!(writer, "    Selected fields: {selected}"))
+            .and_then(|_| writeln!(writer, "    Supersedes: {}", supersedes.unwrap_or_default()))
+            .map_err(|_| RepoError::DestinationUnwritable)?;
+
+        let mut selections = transaction
+            .prepare(
+                "SELECT revision_number, selected_fields_json, created_at
+                 FROM player_selection_revisions WHERE evidence_id = ?1
+                 ORDER BY revision_number",
+            )
+            .map_err(|_| RepoError::NotebookInvalid)?;
+        let rows = selections
+            .query_map([&id], |row| {
+                Ok((
+                    row.get::<_, i64>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, i64>(2)?,
+                ))
+            })
+            .map_err(|_| RepoError::NotebookInvalid)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| RepoError::NotebookInvalid)?;
+        for (selection_revision, fields, at) in rows {
+            writeln!(
+                writer,
+                "    Selection revision {selection_revision} ({at} UTC ms): {fields}"
+            )
+            .map_err(|_| RepoError::DestinationUnwritable)?;
+        }
+        let mut classifications = transaction
+            .prepare(
+                "SELECT classifier_version, classifier_digest, result_id, result_name,
+                        method, confidence, created_at
+                 FROM player_classification_runs WHERE evidence_id = ?1
+                 ORDER BY created_at, id",
+            )
+            .map_err(|_| RepoError::NotebookInvalid)?;
+        let rows = classifications
+            .query_map([&id], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, String>(4)?,
+                    row.get::<_, f64>(5)?,
+                    row.get::<_, i64>(6)?,
+                ))
+            })
+            .map_err(|_| RepoError::NotebookInvalid)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| RepoError::NotebookInvalid)?;
+        for (version, digest, result_id, result_name, method, confidence, at) in rows {
+            writeln!(writer, "    Classification ({at} UTC ms): {result_id} {result_name}; {method}; confidence {confidence:.4}; classifier {version} {digest}")
+                .map_err(|_| RepoError::DestinationUnwritable)?;
+        }
+    }
+
+    let mut empty = transaction
+        .prepare(
+            "SELECT provider_id, lookup_nickname, exact_match_rule, scope_json,
+                    provider_configuration_version, completed_at, operation_key
+             FROM player_empty_outcomes WHERE player_identity_id = ?1
+             ORDER BY completed_at, id",
+        )
+        .map_err(|_| RepoError::NotebookInvalid)?;
+    let rows = empty
+        .query_map([&identity_id], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, i64>(5)?,
+                row.get::<_, String>(6)?,
+            ))
+        })
+        .map_err(|_| RepoError::NotebookInvalid)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| RepoError::NotebookInvalid)?;
+    for (provider, nickname, rule, scope, config, completed_at, operation_key) in rows {
+        writeln!(writer, "  Player empty outcome ({completed_at} UTC ms): provider {provider}; nickname {nickname}; rule {rule}; scope {scope}; configuration {config}; operation {operation_key}")
+            .map_err(|_| RepoError::DestinationUnwritable)?;
+    }
+    writeln!(writer).map_err(|_| RepoError::DestinationUnwritable)?;
     Ok(())
 }
 

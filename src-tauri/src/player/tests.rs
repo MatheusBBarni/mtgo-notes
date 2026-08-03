@@ -1,7 +1,8 @@
 use serde_json::json;
 
 use super::*;
-use crate::domain::{RepoError, Revision, UtcMillis};
+use crate::domain::{InternalPhase, RepoError, Revision, UtcMillis};
+use crate::ipc::CallerIdentity;
 use crate::notebook::NotebookBootstrap;
 use crate::notebook::key::{DatabaseKey, KeyProtector};
 use crate::notebook::migrations::{Migration, MigrationManager};
@@ -387,4 +388,76 @@ fn ut_056_to_062_selection_revisions_are_append_only_and_paged() {
         .evidence_page(&identity.id, None, 1)
         .expect("first page");
     assert_eq!(page.items.len(), 1);
+}
+
+#[test]
+fn ut_015_and_it_009_player_deletion_is_bound_and_tombstoned() {
+    let fixture = Fixture::new();
+    let runtime = fixture.boot();
+    let store = PlayerStore::new(&runtime.repository);
+    let identity = store
+        .create_identity(PlayerId::new(), "Alpha", UtcMillis::new(1).expect("time"))
+        .expect("identity");
+    let imported = store
+        .import_batch(batch(&identity, "source-a", &"a".repeat(64)))
+        .expect("import");
+    let player_runtime = PlayerPublicResultsRuntime::new();
+    let deletion = PlayerDeletionService::new(&runtime.repository, &player_runtime);
+    let preview = deletion
+        .preview(
+            CallerIdentity::Main,
+            InternalPhase::Idle,
+            0,
+            PlayerDeletionTarget::Identity(identity.id.clone()),
+            UtcMillis::new(2).expect("time"),
+        )
+        .expect("preview");
+    assert!(
+        deletion
+            .confirm(
+                CallerIdentity::Main,
+                InternalPhase::Idle,
+                0,
+                &preview.token,
+                &"0".repeat(64),
+                UtcMillis::new(3).expect("time"),
+            )
+            .is_err()
+    );
+    let outcome = deletion
+        .confirm(
+            CallerIdentity::Main,
+            InternalPhase::Idle,
+            0,
+            &preview.token,
+            &preview.digest,
+            UtcMillis::new(3).expect("time"),
+        )
+        .expect("delete");
+    assert!(outcome.deleted);
+    assert!(store.identity().expect("identity").is_none());
+    runtime
+        .repository
+        .with_connection(|connection| {
+            let tombstones: i64 = connection
+                .connection
+                .query_row(
+                    "SELECT count(*) FROM player_tombstones WHERE player_identity_id = ?1",
+                    [identity.id.as_str()],
+                    |row| row.get(0),
+                )
+                .expect("tombstones");
+            assert!(tombstones >= 2);
+            let evidence: i64 = connection
+                .connection
+                .query_row(
+                    "SELECT count(*) FROM player_evidence WHERE id = ?1",
+                    [imported.evidence_id.as_str()],
+                    |row| row.get(0),
+                )
+                .expect("evidence");
+            assert_eq!(evidence, 0);
+            Ok(())
+        })
+        .expect("isolation");
 }

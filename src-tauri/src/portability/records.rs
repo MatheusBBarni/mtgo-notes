@@ -304,6 +304,133 @@ pub const TABLE_SPECS: &[TableSpec] = &[
                             undo_token_digest, purge_state
                      FROM deletion_tombstones ORDER BY entity_type, entity_id",
     },
+    // Player portability is intentionally a separate, FK-safe graph. Consent,
+    // operation receipts, runtime state, and machine-bound configuration are
+    // never archive records.
+    TableSpec {
+        name: "player_identities",
+        columns: &[
+            "singleton",
+            "id",
+            "display_nickname",
+            "normalized_nickname",
+            "created_at",
+            "updated_at",
+            "revision",
+        ],
+        primary_key_indexes: &[0],
+        select_sql: "SELECT singleton, id, display_nickname, normalized_nickname,
+                            created_at, updated_at, revision
+                     FROM player_identities ORDER BY singleton",
+    },
+    TableSpec {
+        name: "player_evidence",
+        columns: &[
+            "id",
+            "player_identity_id",
+            "evidence_schema_version",
+            "kind",
+            "provenance_mode",
+            "provider_id",
+            "attribution_url",
+            "canonical_source_url",
+            "lookup_nickname",
+            "source_nickname",
+            "exact_match_rule",
+            "scope_json",
+            "observed_at",
+            "imported_at",
+            "source_key",
+            "source_digest",
+            "preview_digest",
+            "payload_json",
+            "selected_fields_json",
+            "supersedes_evidence_id",
+        ],
+        primary_key_indexes: &[0],
+        select_sql: "SELECT id, player_identity_id, evidence_schema_version, kind,
+                            provenance_mode, provider_id, attribution_url, canonical_source_url,
+                            lookup_nickname, source_nickname, exact_match_rule, scope_json,
+                            observed_at, imported_at, source_key, source_digest, preview_digest,
+                            payload_json, selected_fields_json, supersedes_evidence_id
+                     FROM player_evidence ORDER BY id",
+    },
+    TableSpec {
+        name: "player_evidence_cards",
+        columns: &[
+            "evidence_id",
+            "oracle_id",
+            "display_name",
+            "zone",
+            "quantity",
+            "basic_land",
+        ],
+        primary_key_indexes: &[0, 1, 3],
+        select_sql: "SELECT evidence_id, oracle_id, display_name, zone, quantity, basic_land
+                     FROM player_evidence_cards ORDER BY evidence_id, oracle_id, zone",
+    },
+    TableSpec {
+        name: "player_selection_revisions",
+        columns: &[
+            "id",
+            "evidence_id",
+            "revision_number",
+            "selected_fields_json",
+            "created_at",
+        ],
+        primary_key_indexes: &[0],
+        select_sql: "SELECT id, evidence_id, revision_number, selected_fields_json, created_at
+                     FROM player_selection_revisions ORDER BY evidence_id, revision_number, id",
+    },
+    TableSpec {
+        name: "player_classification_runs",
+        columns: &[
+            "id",
+            "evidence_id",
+            "classifier_version",
+            "classifier_digest",
+            "result_id",
+            "result_name",
+            "method",
+            "confidence",
+            "created_at",
+        ],
+        primary_key_indexes: &[0],
+        select_sql: "SELECT id, evidence_id, classifier_version, classifier_digest,
+                            result_id, result_name, method, confidence, created_at
+                     FROM player_classification_runs ORDER BY evidence_id, created_at, id",
+    },
+    TableSpec {
+        name: "player_empty_outcomes",
+        columns: &[
+            "id",
+            "player_identity_id",
+            "provider_id",
+            "lookup_nickname",
+            "exact_match_rule",
+            "scope_json",
+            "provider_configuration_version",
+            "completed_at",
+            "operation_key",
+        ],
+        primary_key_indexes: &[0],
+        select_sql: "SELECT id, player_identity_id, provider_id, lookup_nickname,
+                            exact_match_rule, scope_json, provider_configuration_version,
+                            completed_at, operation_key
+                     FROM player_empty_outcomes ORDER BY completed_at, id",
+    },
+    TableSpec {
+        name: "player_tombstones",
+        columns: &[
+            "entity_kind",
+            "entity_id",
+            "player_identity_id",
+            "deleted_at",
+        ],
+        primary_key_indexes: &[0, 1],
+        select_sql: "SELECT entity_kind, entity_id, player_identity_id, deleted_at
+                     FROM player_tombstones ORDER BY entity_kind, entity_id",
+    },
 ];
 
 pub fn for_each_record(
@@ -321,8 +448,13 @@ pub fn for_each_record_with_provenance(
         let mut provenance_statement = transaction
             .prepare(
                 "SELECT DISTINCT classifier_version, classifier_digest
-                 FROM classification_runs
-                 WHERE status = 'successful'
+                 FROM (
+                   SELECT classifier_version, classifier_digest
+                   FROM classification_runs WHERE status = 'successful'
+                   UNION ALL
+                   SELECT classifier_version, classifier_digest
+                   FROM player_classification_runs
+                 )
                  ORDER BY classifier_version, classifier_digest",
             )
             .map_err(|_| RepoError::NotebookInvalid)?;
@@ -536,7 +668,10 @@ pub fn active_tombstone_ids(
             .connection
             .prepare(
                 "SELECT entity_id FROM deletion_tombstones
-                 WHERE purge_state IN ('pending','purged') ORDER BY entity_id",
+                 WHERE purge_state IN ('pending','purged')
+                 UNION
+                 SELECT entity_id FROM player_tombstones
+                 ORDER BY entity_id",
             )
             .map_err(|_| RepoError::NotebookInvalid)?;
         let rows = statement

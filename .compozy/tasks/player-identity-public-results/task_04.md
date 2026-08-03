@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Extend Player Deletion, Portability, and Export
 type: backend
 complexity: critical
@@ -34,14 +34,14 @@ Complete the Player data lifecycle with explicitly confirmed deletion, canonical
 
 ## Subtasks
 
-- [ ] 4.1 Define closed individual-evidence, empty-outcome, and whole-identity deletion preview/confirm contracts.
-- [ ] 4.2 Deliver atomic Player-only cascade deletion, content-free tombstones, receipts, consent removal, and runtime fencing.
-- [ ] 4.3 Expose main-only deletion commands/errors/projections without changing opponent deletion authority.
-- [ ] 4.4 Register the seven canonical Player tables and provenance/counts in encrypted archive processing.
-- [ ] 4.5 Deliver absent/same/different Player-ID restore preflight, allowed-mode projection, and defensive apply-time recheck.
-- [ ] 4.6 Deliver merge/replace/rollback/no-resurrection behavior with deterministic Player diffs and consent-off runtime reset.
-- [ ] 4.7 Extend complete-notebook text export with Player data and preserve selected-opponent exclusion.
-- [ ] 4.8 Prove deletion, interruption, restore, export, replay, and opponent-isolation behavior end to end.
+- [x] 4.1 Define closed individual-evidence, empty-outcome, and whole-identity deletion preview/confirm contracts.
+- [x] 4.2 Deliver atomic Player-only cascade deletion, content-free tombstones, receipts, consent removal, and runtime fencing.
+- [x] 4.3 Expose main-only deletion commands/errors/projections without changing opponent deletion authority.
+- [x] 4.4 Register the seven canonical Player tables and provenance/counts in encrypted archive processing.
+- [x] 4.5 Deliver absent/same/different Player-ID restore preflight, allowed-mode projection, and defensive apply-time recheck.
+- [x] 4.6 Deliver merge/replace/rollback/no-resurrection behavior with deterministic Player diffs and consent-off runtime reset.
+- [x] 4.7 Extend complete-notebook text export with Player data and preserve selected-opponent exclusion.
+- [x] 4.8 Prove deletion, interruption, restore, export, replay, and opponent-isolation behavior end to end.
 
 ## Implementation Details
 
@@ -90,11 +90,11 @@ Implement the TechSpec sections “Deletion Design” and “Portability and Res
 
 Cases assigned from `_tests.md`, the test contract — read each ID's full definition there before writing tests.
 
-- [ ] UT-015 — non-content Player tombstone representation.
-- [ ] UT-066–UT-075 — deletion binding, archive inclusion/exclusion, merge/replace identity, disabled restore, diff, and export scope.
-- [ ] IT-009 — Player evidence cascade and tombstone persistence.
-- [ ] IT-036–IT-045 — scoped/cascade deletion, recovery, archive/restore modes, no resurrection, disabled restore, and export boundaries.
-- [ ] E2E-014 — complete mixed-notebook portability, conflict, replace, and plaintext-scope journey.
+- [x] UT-015 — non-content Player tombstone representation.
+- [x] UT-066–UT-075 — deletion binding, archive inclusion/exclusion, merge/replace identity, disabled restore, diff, and export scope.
+- [x] IT-009 — Player evidence cascade and tombstone persistence.
+- [x] IT-036–IT-045 — scoped/cascade deletion, recovery, archive/restore modes, no resurrection, disabled restore, and export boundaries.
+- [x] E2E-014 — complete mixed-notebook portability, conflict, replace, and plaintext-scope journey.
 
 ## Success Criteria
 

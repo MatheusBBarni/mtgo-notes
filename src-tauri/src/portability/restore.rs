@@ -12,6 +12,7 @@ use crate::notebook::repository::NotebookRepository;
 use crate::operations::{
     CancellationToken, OperationCoordinator, OperationKind, OperationRecord, OperationState,
 };
+use crate::player::runtime::PlayerPublicResultsRuntime;
 use crate::portability::archive::{
     ArchiveManifest, CanonicalRecord, CanonicalValue, for_each_record_with_cancellation,
     verify_archive_with_cancellation,
@@ -44,6 +45,10 @@ pub struct RestoreDiff {
     pub profiles: u64,
     pub encounters: u64,
     pub observations: u64,
+    pub player_identities: u64,
+    pub player_evidence: u64,
+    pub player_empty_outcomes: u64,
+    pub player_tombstones: u64,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -55,7 +60,8 @@ pub struct RestorePreview {
     pub archive_sha256: String,
     pub manifest: ArchiveManifest,
     pub diff: RestoreDiff,
-    pub allowed_modes: [RestoreMode; 2],
+    pub allowed_modes: Vec<RestoreMode>,
+    pub player_identity_conflict: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -147,19 +153,34 @@ pub fn preview_restore(
         let mut suppressed_ids = active_tombstone_ids(repository)?;
         let mut tombstone_skips = 0_u64;
         staging.transact_domain(|transaction| {
+            let mut records = Vec::new();
             for_each_record_with_cancellation(
                 input.archive_path,
                 input.passphrase,
                 input.cancellation,
                 |record| {
-                    if references_any(&record, &suppressed_ids) {
-                        suppressed_ids.extend(primary_text_ids(&record));
-                        tombstone_skips = tombstone_skips.saturating_add(1);
-                        return Ok(());
-                    }
-                    insert_record(transaction, &record)
+                    records.push(record);
+                    Ok(())
                 },
             )?;
+            records.sort_by_key(|record| {
+                if is_tombstone_record(record) {
+                    0_u8
+                } else {
+                    1_u8
+                }
+            });
+            for record in records {
+                if is_tombstone_record(&record) {
+                    extend_tombstone_ids(&record, &mut suppressed_ids);
+                    insert_record(transaction, &record)?;
+                } else if references_any(&record, &suppressed_ids) {
+                    suppressed_ids.extend(primary_text_ids(&record));
+                    tombstone_skips = tombstone_skips.saturating_add(1);
+                } else {
+                    insert_record(transaction, &record)?;
+                }
+            }
             Ok(())
         })?;
         copy_live_tombstones(repository, &staging)?;
@@ -167,6 +188,11 @@ pub fn preview_restore(
         validate_foreign_keys(&staging)?;
         let mut diff = calculate_diff(repository, &staging)?;
         diff.tombstone_skips = tombstone_skips;
+        let live_player_id = player_identity_id(repository)?;
+        let archived_player_id = player_identity_id(&staging)?;
+        let player_identity_conflict = live_player_id.is_some()
+            && archived_player_id.is_some()
+            && live_player_id != archived_player_id;
         let now = UtcMillis::now();
         let expires_at = UtcMillis::new(
             now.get()
@@ -189,7 +215,12 @@ pub fn preview_restore(
                 archive_sha256: verified.archive_sha256,
                 manifest: verified.manifest,
                 diff,
-                allowed_modes: [RestoreMode::Merge, RestoreMode::Replace],
+                allowed_modes: if player_identity_conflict {
+                    vec![RestoreMode::Replace]
+                } else {
+                    vec![RestoreMode::Merge, RestoreMode::Replace]
+                },
+                player_identity_conflict,
             },
             staging_path: staging_path.clone(),
             live_digest: notebook_digest(repository)?,
@@ -222,12 +253,15 @@ pub fn apply_restore(
     mode: RestoreMode,
     _idempotency_key: IdempotencyKey,
 ) -> Result<RestoreResult, RepoError> {
-    if staged.preview.expires_at < UtcMillis::now()
+    if staged.preview.expires_at <= UtcMillis::now()
         || staged.live_digest != notebook_digest(repository)?
         || !staged.staging_path.exists()
     {
         remove_database_family(&staged.staging_path);
         return Err(RepoError::InvalidRequest);
+    }
+    if staged.preview.player_identity_conflict && mode == RestoreMode::Merge {
+        return Err(RepoError::MergeConflict);
     }
     let kind = match mode {
         RestoreMode::Merge => OperationKind::RestoreMerge,
@@ -305,6 +339,25 @@ pub fn apply_restore(
     applied
 }
 
+/// Apply a restore while explicitly resetting the in-memory Player authority.
+/// Portable data never carries consent, provider configuration, sessions, or
+/// previews; callers that own the runtime use this wrapper at the commit seam.
+pub fn apply_restore_with_player_runtime(
+    repository: &NotebookRepository,
+    key: &DatabaseKey,
+    coordinator: &OperationCoordinator,
+    staged: StagedRestore,
+    mode: RestoreMode,
+    idempotency_key: IdempotencyKey,
+    player_runtime: &PlayerPublicResultsRuntime,
+) -> Result<RestoreResult, RepoError> {
+    let result = apply_restore(repository, key, coordinator, staged, mode, idempotency_key)?;
+    player_runtime
+        .reset_disabled()
+        .map_err(|_| RepoError::ProviderUnavailable)?;
+    Ok(result)
+}
+
 pub fn list_rollbacks(repository: &NotebookRepository) -> Result<Vec<RollbackView>, RepoError> {
     prune_rollbacks(repository)?;
     Ok(read_rollbacks(repository)?
@@ -320,7 +373,7 @@ pub fn apply_rollback(
     rollback_id: &str,
 ) -> Result<RollbackView, RepoError> {
     let metadata = find_rollback(repository, rollback_id)?;
-    if metadata.view.expires_at < UtcMillis::now() {
+    if metadata.view.expires_at <= UtcMillis::now() {
         discard_rollback(repository, rollback_id)?;
         return Err(RepoError::UndoExpired);
     }
@@ -369,6 +422,10 @@ fn calculate_diff(
                 "opponent_profiles" => diff.profiles += 1,
                 "encounters" => diff.encounters += 1,
                 "observations" => diff.observations += 1,
+                "player_identities" => diff.player_identities += 1,
+                "player_evidence" => diff.player_evidence += 1,
+                "player_empty_outcomes" => diff.player_empty_outcomes += 1,
+                "player_tombstones" => diff.player_tombstones += 1,
                 _ => {}
             }
             Ok(())
@@ -377,17 +434,50 @@ fn calculate_diff(
     Ok(diff)
 }
 
+fn player_identity_id(repository: &NotebookRepository) -> Result<Option<String>, RepoError> {
+    repository.with_connection(|connection| {
+        connection
+            .connection
+            .query_row(
+                "SELECT id FROM player_identities WHERE singleton = 1",
+                [],
+                |row| row.get::<_, String>(0),
+            )
+            .optional()
+            .map_err(|_| RepoError::NotebookInvalid)
+    })
+}
+
 fn merge_staging(
     live: &NotebookRepository,
     key: &DatabaseKey,
     staging_path: &Path,
 ) -> Result<RestoreDiff, RepoError> {
     let staging = NotebookRepository::open(staging_path, key)?;
-    let tombstones = active_tombstone_ids(live)?;
+    let mut tombstones = active_tombstone_ids(live)?;
     let mut remapped_ids = BTreeMap::<String, String>::new();
     let mut diff = RestoreDiff::default();
     live.transact_domain(|transaction| {
-        for_each_notebook_record(&staging, |mut record| {
+        let mut records = Vec::new();
+        for_each_notebook_record(&staging, |record| {
+            records.push(record);
+            Ok(())
+        })?;
+        records.sort_by_key(|record| {
+            if is_tombstone_record(record) {
+                0_u8
+            } else {
+                1_u8
+            }
+        });
+        for mut record in records {
+            if is_tombstone_record(&record) {
+                extend_tombstone_ids(&record, &mut tombstones);
+                if matches!(record_status(transaction, &record)?, RecordStatus::Missing) {
+                    insert_record(transaction, &record)?;
+                }
+                continue;
+            }
             remap_record(&mut record, &remapped_ids);
             if references_any(&record, &tombstones) {
                 diff.tombstone_skips += 1;
@@ -414,10 +504,30 @@ fn merge_staging(
                     }
                 }
             }
-            Ok(())
-        })
+        }
+        Ok(())
     })?;
     Ok(diff)
+}
+
+fn is_tombstone_record(record: &CanonicalRecord) -> bool {
+    matches!(
+        record.table.as_str(),
+        "deletion_tombstones" | "player_tombstones"
+    )
+}
+
+fn extend_tombstone_ids(record: &CanonicalRecord, ids: &mut std::collections::BTreeSet<String>) {
+    let indexes = if record.table == "player_tombstones" {
+        [1_usize, 2_usize].as_slice()
+    } else {
+        [1_usize].as_slice()
+    };
+    for index in indexes {
+        if let Some(CanonicalValue::Text(value)) = record.values.get(*index) {
+            ids.insert(value.clone());
+        }
+    }
 }
 
 fn existing_identity_mapping(
@@ -481,7 +591,7 @@ fn copy_live_tombstones(
 ) -> Result<(), RepoError> {
     let mut records = Vec::new();
     for_each_notebook_record(live, |record| {
-        if record.table == "deletion_tombstones" {
+        if is_tombstone_record(&record) {
             records.push(record);
         }
         Ok(())

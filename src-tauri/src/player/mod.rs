@@ -1,5 +1,6 @@
 pub mod census;
 pub mod classification;
+pub mod deletion;
 pub mod evidence;
 pub mod models;
 pub mod repository;
@@ -10,6 +11,10 @@ pub mod service;
 pub use classification::{
     PlayerClassificationEligibility, PlayerClassificationOutcome, PlayerClassificationReason,
     PlayerClassificationService, classification_eligibility, is_classification_eligible,
+};
+pub use deletion::{
+    PlayerDeletionCounts, PlayerDeletionOutcome, PlayerDeletionPreview, PlayerDeletionService,
+    PlayerDeletionTarget,
 };
 pub use evidence::{
     ManualEvidenceInput, ManualEvidencePreview, approved_fields, default_selected_fields,

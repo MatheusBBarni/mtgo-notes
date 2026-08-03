@@ -8,9 +8,11 @@ use crate::notebook::repository::NotebookRepository;
 use crate::operations::{
     CancellationToken, OperationCoordinator, OperationKind, OperationRecord, OperationState,
 };
+use crate::player::{PlayerId, PlayerStore};
 use crate::portability::archive::{ARCHIVE_EXTENSION, verify_archive};
 use crate::portability::backup::{BackupRequest, create_backup};
 use crate::portability::export::{ExportRequest, ExportScope, create_export};
+use crate::portability::records::TABLE_SPECS;
 use crate::portability::restore::{
     RestoreMode, RestorePreviewInput, apply_restore, apply_rollback, discard_rollback,
     list_rollbacks, preview_restore,
@@ -136,6 +138,52 @@ fn snapshot_counts(repository: &NotebookRepository) -> (i64, i64, i64) {
         snapshot.encounter_count,
         snapshot.observation_count,
     )
+}
+
+#[test]
+fn ut_071_player_archive_registry_is_fk_ordered_and_operationally_minimal() {
+    let names = TABLE_SPECS.iter().map(|spec| spec.name).collect::<Vec<_>>();
+    let start = names
+        .iter()
+        .position(|name| *name == "player_identities")
+        .expect("player tables");
+    assert_eq!(
+        &names[start..start + 7],
+        &[
+            "player_identities",
+            "player_evidence",
+            "player_evidence_cards",
+            "player_selection_revisions",
+            "player_classification_runs",
+            "player_empty_outcomes",
+            "player_tombstones",
+        ]
+    );
+    assert!(!names.contains(&"player_source_consents"));
+    assert!(!names.contains(&"player_operation_receipts"));
+}
+
+#[test]
+fn it_041_different_player_ids_allow_replace_only_before_mutation() {
+    let source = Fixture::empty();
+    PlayerStore::new(&source.repository)
+        .create_identity(PlayerId::new(), "Source", UtcMillis::new(1).expect("time"))
+        .expect("source identity");
+    let archive = create_archive(&source, "player-conflict.mtgonotes");
+    let target = Fixture::empty();
+    PlayerStore::new(&target.repository)
+        .create_identity(PlayerId::new(), "Target", UtcMillis::new(1).expect("time"))
+        .expect("target identity");
+    let staged = stage_archive(
+        &target,
+        &OperationCoordinator::default(),
+        &archive,
+        PASSPHRASE,
+    )
+    .expect("preview");
+    assert_eq!(staged.preview.allowed_modes, vec![RestoreMode::Replace]);
+    assert!(staged.preview.player_identity_conflict);
+    crate::portability::restore::discard_staged_restore(staged);
 }
 
 // UT-077, UT-080, IT-220, E2E-014
