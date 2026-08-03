@@ -19,6 +19,9 @@ pub const CANONICALIZATION_VERSION: &str = "player-canonical-v1";
 pub const MAX_NICKNAME_SCALARS: usize = 128;
 pub const MAX_DECK_ROWS: usize = 500;
 pub const MAX_CARD_QUANTITY: u16 = 250;
+pub const MAX_MANUAL_TITLE_SCALARS: usize = 200;
+pub const MAX_MANUAL_FIELD_SCALARS: usize = 64;
+pub const MAX_MANUAL_PAYLOAD_BYTES: usize = 256 * 1024;
 
 macro_rules! player_id {
     ($name:ident) => {
@@ -64,6 +67,7 @@ player_id!(PlayerSelectionId);
 player_id!(PlayerEmptyOutcomeId);
 player_id!(PlayerClassificationRunId);
 player_id!(PlayerOperationKey);
+player_id!(PlayerPreviewToken);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NormalizedNickname {
@@ -115,6 +119,7 @@ pub enum EvidenceProvenance {
 #[serde(rename_all = "snake_case")]
 pub enum DeckContentsKind {
     ReferenceOnly,
+    #[serde(alias = "complete")]
     CompleteDeck,
 }
 
@@ -197,7 +202,12 @@ impl PlayerEvidence {
     pub fn is_complete_official_deck(&self) -> bool {
         matches!(self.kind, EvidenceKind::OfficialPublishedDecklist)
             && self.payload.get("contents").and_then(Value::as_str) == Some("complete_deck")
-            && !self.cards.is_empty()
+            && validate_cards(&self.cards, true).is_ok()
+            && self
+                .payload
+                .get("format")
+                .and_then(Value::as_str)
+                .is_some_and(|format| !format.trim().is_empty())
     }
 }
 
@@ -317,6 +327,58 @@ pub fn preview_digest(envelope: &Value) -> Result<String, RepoError> {
     canonical_digest(envelope)
 }
 
+/// Validate the closed retained-field manifest.  The manifest is deliberately
+/// represented as a JSON object of boolean values so a renderer cannot smuggle
+/// arbitrary retained payload through a free-form map or array.
+pub fn validate_selected_fields(selected: &Value, payload: &Value) -> Result<(), RepoError> {
+    let fields = selected.as_object().ok_or(RepoError::InvalidRequest)?;
+    let payload_fields = payload.as_object();
+    for (field, value) in fields {
+        if !value.is_boolean() || field.trim().is_empty() || field.chars().any(char::is_control) {
+            return Err(RepoError::InvalidRequest);
+        }
+        let mandatory = matches!(
+            field.as_str(),
+            "source_nickname" | "sourceNickname" | "attribution_url" | "attributionUrl"
+        );
+        if !mandatory && payload_fields.is_none_or(|object| !object.contains_key(field)) {
+            return Err(RepoError::InvalidRequest);
+        }
+    }
+    let has_source = fields
+        .get("source_nickname")
+        .or_else(|| fields.get("sourceNickname"))
+        .and_then(Value::as_bool)
+        == Some(true);
+    let has_attribution = fields
+        .get("attribution_url")
+        .or_else(|| fields.get("attributionUrl"))
+        .and_then(Value::as_bool)
+        == Some(true);
+    if !has_source || !has_attribution {
+        return Err(RepoError::InvalidRequest);
+    }
+    Ok(())
+}
+
+/// Keep only fields explicitly retained by the user.  Provenance remains in
+/// typed database columns; unselected preview values never cross the import
+/// boundary into `payload_json`.
+pub fn retain_selected_payload(payload: &Value, selected: &Value) -> Result<Value, RepoError> {
+    validate_selected_fields(selected, payload)?;
+    let selected = selected.as_object().ok_or(RepoError::InvalidRequest)?;
+    let payload = payload.as_object().ok_or(RepoError::InvalidRequest)?;
+    let mut retained = Map::new();
+    for (field, include) in selected {
+        if include.as_bool() == Some(true)
+            && let Some(value) = payload.get(field)
+        {
+            retained.insert(field.clone(), value.clone());
+        }
+    }
+    Ok(Value::Object(retained))
+}
+
 fn canonical_value(value: &Value) -> Value {
     match value {
         Value::Object(map) => {
@@ -353,18 +415,18 @@ pub fn validate_cards(cards: &[PlayerCard], complete: bool) -> Result<(), RepoEr
             || card.display_name.trim().is_empty()
             || card.quantity == 0
             || card.quantity > MAX_CARD_QUANTITY
-            || card.zone.trim().is_empty()
-            || card
-                .oracle_id
-                .chars()
-                .chain(card.display_name.chars())
-                .any(char::is_control)
+            || !matches!(
+                card.zone.as_str(),
+                "main" | "sideboard" | "companion" | "other"
+            )
+            || card.oracle_id.chars().any(char::is_control)
+            || card.display_name.chars().any(char::is_control)
         {
             return Err(RepoError::InvalidRequest);
         }
         let key = (
             card.oracle_id.nfkc().case_fold().collect::<String>(),
-            card.zone.clone(),
+            card.zone.nfkc().case_fold().collect::<String>(),
         );
         if !keys.insert(key) {
             return Err(RepoError::InvalidRequest);

@@ -224,6 +224,10 @@ impl<'a> PlayerStore<'a> {
     /// existing row; a different digest creates a linked immutable version.
     pub fn import_batch(&self, batch: VerifiedImportBatch) -> Result<ImportOutcome, RepoError> {
         validate_digest(&batch.request_digest)?;
+        if batch.cards != batch.evidence.cards {
+            return Err(RepoError::InvalidRequest);
+        }
+        validate_selected_fields(&batch.selected_fields, &batch.evidence.payload)?;
         validate_cards(
             &batch.cards,
             batch
@@ -233,6 +237,11 @@ impl<'a> PlayerStore<'a> {
                 .and_then(Value::as_str)
                 == Some("complete_deck"),
         )?;
+        let retained_payload =
+            retain_selected_payload(&batch.evidence.payload, &batch.selected_fields)?;
+        let mut evidence = batch.evidence.clone();
+        evidence.payload = retained_payload;
+        evidence.selected_fields = batch.selected_fields.clone();
         self.repository.transact_domain(|transaction| {
             let identity_exists = transaction
                 .query_row(
@@ -257,7 +266,7 @@ impl<'a> PlayerStore<'a> {
                 let receipt = load_receipt(transaction, &batch.operation_key, &batch.command_kind)?;
                 return Ok(ImportOutcome {
                     evidence_id: id,
-                    inserted: false,
+                    inserted: replay.result_code == "imported",
                     receipt,
                 });
             }
@@ -278,7 +287,37 @@ impl<'a> PlayerStore<'a> {
             let (evidence_id, inserted) = if let Some(id) = existing {
                 (PlayerEvidenceId::parse(id)?, false)
             } else {
-                let evidence = &batch.evidence;
+                let supersedes = if let Some(supersedes) = &evidence.supersedes_evidence_id {
+                    let prior = transaction
+                        .query_row(
+                            "SELECT player_identity_id, source_key, source_digest FROM player_evidence WHERE id = ?1",
+                            [supersedes.as_str()],
+                            |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?)),
+                        )
+                        .optional()
+                        .map_err(map_database_error)?
+                        .ok_or(RepoError::NotFound)?;
+                    if prior.0 != evidence.player_identity_id.as_str()
+                        || prior.1 != evidence.source_key
+                        || prior.2 == evidence.source_digest
+                    {
+                        return Err(RepoError::InvalidRequest);
+                    }
+                    Some(supersedes.clone())
+                } else {
+                    transaction
+                        .query_row(
+                            "SELECT id FROM player_evidence
+                             WHERE player_identity_id = ?1 AND source_key = ?2
+                             ORDER BY imported_at DESC, id DESC LIMIT 1",
+                            params![evidence.player_identity_id.as_str(), evidence.source_key],
+                            |row| row.get::<_, String>(0),
+                        )
+                        .optional()
+                        .map_err(map_database_error)?
+                        .map(PlayerEvidenceId::parse)
+                        .transpose()?
+                };
                 let payload_json = json_string(&evidence.payload)?;
                 let selected_json = json_string(&batch.selected_fields)?;
                 let scope_json = json_string(&evidence.scope)?;
@@ -312,10 +351,7 @@ impl<'a> PlayerStore<'a> {
                             evidence.preview_digest,
                             payload_json,
                             selected_json,
-                            evidence
-                                .supersedes_evidence_id
-                                .as_ref()
-                                .map(PlayerEvidenceId::as_str)
+                            supersedes.as_ref().map(PlayerEvidenceId::as_str)
                         ],
                     )
                     .map_err(map_database_error)?;
@@ -381,6 +417,46 @@ impl<'a> PlayerStore<'a> {
             validate_digest(digest)?;
         }
         self.repository.transact_domain(|transaction| {
+            let (player_identity_id, payload_json) = transaction
+                .query_row(
+                    "SELECT player_identity_id, payload_json FROM player_evidence WHERE id = ?1",
+                    [input.evidence_id.as_str()],
+                    |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+                )
+                .optional()
+                .map_err(map_database_error)?
+                .ok_or(RepoError::NotFound)?;
+            let payload: Value = serde_json::from_str(&payload_json).map_err(|_| RepoError::NotebookInvalid)?;
+            validate_selected_fields(&input.selected_fields, &payload)?;
+            if let Some(operation_key) = &input.operation_key
+                && let Some(replay) =
+                    receipt_in_transaction(transaction, operation_key, &input.command_kind)?
+            {
+                    if input.request_digest.as_deref() != Some(replay.request_digest.as_str()) {
+                        return Err(RepoError::InvalidRequest);
+                    }
+                    let revision = transaction
+                        .query_row(
+                            "SELECT revision_number FROM player_selection_revisions WHERE evidence_id = ?1 ORDER BY revision_number DESC LIMIT 1",
+                            [input.evidence_id.as_str()],
+                            |row| row.get::<_, i64>(0),
+                        )
+                        .map_err(map_database_error)?;
+                    let selected_json = transaction
+                        .query_row(
+                            "SELECT selected_fields_json FROM player_selection_revisions WHERE evidence_id = ?1 ORDER BY revision_number DESC LIMIT 1",
+                            [input.evidence_id.as_str()],
+                            |row| row.get::<_, String>(0),
+                        )
+                        .map_err(map_database_error)?;
+                    return Ok(PlayerSelectionRevision {
+                        id: PlayerSelectionId::new(),
+                        evidence_id: input.evidence_id.clone(),
+                        revision_number: Revision::new(u64::try_from(revision).map_err(|_| RepoError::NotebookInvalid)?)?,
+                        selected_fields: serde_json::from_str(&selected_json).map_err(|_| RepoError::NotebookInvalid)?,
+                        created_at: input.now,
+                    });
+            }
             let current = transaction
                 .query_row(
                     "SELECT coalesce(max(revision_number), 0)
@@ -414,13 +490,28 @@ impl<'a> PlayerStore<'a> {
                     ],
                 )
                 .map_err(map_database_error)?;
-            Ok(PlayerSelectionRevision {
+            let revision = PlayerSelectionRevision {
                 id,
                 evidence_id: input.evidence_id,
                 revision_number: next,
                 selected_fields: input.selected_fields,
                 created_at: input.now,
-            })
+            };
+            if let (Some(operation_key), Some(request_digest)) =
+                (&input.operation_key, &input.request_digest)
+            {
+                insert_receipt(
+                    transaction,
+                    operation_key,
+                    &input.command_kind,
+                    &PlayerId::parse(player_identity_id)?,
+                    request_digest,
+                    "selection_updated",
+                    Some(revision.id.as_str()),
+                    input.now,
+                )?;
+            }
+            Ok(revision)
         })
     }
 
@@ -488,6 +579,16 @@ impl<'a> PlayerStore<'a> {
         run: PlayerClassificationRun,
     ) -> Result<PlayerClassificationRun, RepoError> {
         self.repository.transact_domain(|transaction| {
+            let exists: i64 = transaction
+                .query_row(
+                    "SELECT EXISTS(SELECT 1 FROM player_evidence WHERE id = ?1)",
+                    [run.evidence_id.as_str()],
+                    |row| row.get(0),
+                )
+                .map_err(map_database_error)?;
+            if exists == 0 {
+                return Err(RepoError::NotFound);
+            }
             transaction
                 .execute(
                     "INSERT INTO player_classification_runs(
@@ -509,6 +610,43 @@ impl<'a> PlayerStore<'a> {
                 )
                 .map_err(map_database_error)?;
             Ok(run)
+        })
+    }
+
+    pub fn selection_history(
+        &self,
+        evidence_id: &PlayerEvidenceId,
+    ) -> Result<Vec<PlayerSelectionRevision>, RepoError> {
+        self.repository.with_connection(|connection| {
+            let mut statement = connection
+                .connection
+                .prepare(
+                    "SELECT id, evidence_id, revision_number, selected_fields_json, created_at
+                     FROM player_selection_revisions WHERE evidence_id = ?1
+                     ORDER BY revision_number ASC",
+                )
+                .map_err(map_database_error)?;
+            statement
+                .query_map([evidence_id.as_str()], |row| {
+                    Ok(PlayerSelectionRevision {
+                        id: PlayerSelectionId::parse(row.get::<_, String>(0)?)
+                            .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                        evidence_id: PlayerEvidenceId::parse(row.get::<_, String>(1)?)
+                            .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                        revision_number: Revision::new(
+                            u64::try_from(row.get::<_, i64>(2)?)
+                                .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                        )
+                        .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                        selected_fields: serde_json::from_str(&row.get::<_, String>(3)?)
+                            .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                        created_at: UtcMillis::new(row.get(4)?)
+                            .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                    })
+                })
+                .map_err(map_database_error)?
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(map_database_error)
         })
     }
 
@@ -559,6 +697,32 @@ impl<'a> PlayerStore<'a> {
                 None
             };
             Ok(EvidencePage { items, next_cursor })
+        })
+    }
+
+    pub fn evidence(
+        &self,
+        evidence_id: &PlayerEvidenceId,
+    ) -> Result<Option<PlayerEvidence>, RepoError> {
+        self.repository.with_connection(|connection| {
+            let mut evidence = connection
+                .connection
+                .query_row(
+                    "SELECT id, player_identity_id, evidence_schema_version, kind,
+                            provenance_mode, provider_id, attribution_url, canonical_source_url,
+                            lookup_nickname, source_nickname, exact_match_rule, scope_json,
+                            observed_at, imported_at, source_key, source_digest, preview_digest,
+                            payload_json, selected_fields_json, supersedes_evidence_id
+                     FROM player_evidence WHERE id = ?1",
+                    [evidence_id.as_str()],
+                    map_evidence,
+                )
+                .optional()
+                .map_err(map_database_error)?;
+            if let Some(item) = evidence.as_mut() {
+                item.cards = load_cards(&connection.connection, evidence_id)?;
+            }
+            Ok(evidence)
         })
     }
 }

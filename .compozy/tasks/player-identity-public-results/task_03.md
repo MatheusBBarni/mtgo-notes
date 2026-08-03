@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Deliver the Immutable Evidence Lifecycle and Classification
 type: backend
 complexity: critical
@@ -34,15 +34,15 @@ Complete the durable Player evidence path from a trusted provider or manual stat
 
 ## Subtasks
 
-- [ ] 3.1 Finalize canonical typed evidence envelopes, payloads, retained-field manifests, source/version rules, and classification eligibility.
-- [ ] 3.2 Deliver pure official artifact URL and bounded manual-result/deck validation with no external I/O.
-- [ ] 3.3 Extend runtime preview storage for manual statements and complete binding/expiry semantics.
-- [ ] 3.4 Deliver verified atomic batch import, selected payload/card retention, first selection revision, receipt, and rollback.
-- [ ] 3.5 Deliver duplicate detection, changed-source immutable version linking, and distinct-source behavior.
-- [ ] 3.6 Deliver explicit refresh reconciliation and scoped-empty coexistence without overwriting prior evidence.
-- [ ] 3.7 Deliver append-only retained-field revisions, optimistic concurrency, replay safety, and bounded evidence paging.
-- [ ] 3.8 Deliver post-commit complete-deck classification into Player-owned runs plus honest unclassified results.
-- [ ] 3.9 Extend the existing main-only Player service/command projection seam and prove opponent isolation.
+- [x] 3.1 Finalize canonical typed evidence envelopes, payloads, retained-field manifests, source/version rules, and classification eligibility.
+- [x] 3.2 Deliver pure official artifact URL and bounded manual-result/deck validation with no external I/O.
+- [x] 3.3 Extend runtime preview storage for manual statements and complete binding/expiry semantics.
+- [x] 3.4 Deliver verified atomic batch import, selected payload/card retention, first selection revision, receipt, and rollback.
+- [x] 3.5 Deliver duplicate detection, changed-source immutable version linking, and distinct-source behavior.
+- [x] 3.6 Deliver explicit refresh reconciliation and scoped-empty coexistence without overwriting prior evidence.
+- [x] 3.7 Deliver append-only retained-field revisions, optimistic concurrency, replay safety, and bounded evidence paging.
+- [x] 3.8 Deliver post-commit complete-deck classification into Player-owned runs plus honest unclassified results.
+- [x] 3.9 Extend the existing main-only Player service/command projection seam and prove opponent isolation.
 
 ## Implementation Details
 
@@ -92,14 +92,14 @@ The existing opponent `DeckService::confirm_public_snapshot` may inform pure cla
 
 Cases assigned from `_tests.md`, the test contract — read each ID's full definition there before writing tests.
 
-- [ ] UT-008–UT-010 — complete/reference deck and retained-field validation.
-- [ ] UT-016–UT-017 — source-version links and classification eligibility.
-- [ ] UT-022–UT-023, UT-049 — manual URL/field bounds and zero-I/O validation.
-- [ ] UT-038 — preview/session/identity/source/digest import binding.
-- [ ] UT-056–UT-062 — append-only selections, atomic imports, empty replay, Player classification, and paging.
-- [ ] IT-008, IT-010 — separate Player classification and opponent logical isolation.
-- [ ] IT-024 — no-fetch manual preview reference/complete/invalid flows.
-- [ ] IT-026–IT-035 — binding rejection, rollback, dedupe/version/refresh, selection, classification, identity fencing, and restart lifecycle.
+- [x] UT-008–UT-010 — complete/reference deck and retained-field validation.
+- [x] UT-016–UT-017 — source-version links and classification eligibility.
+- [x] UT-022–UT-023, UT-049 — manual URL/field bounds and zero-I/O validation.
+- [x] UT-038 — preview/session/identity/source/digest import binding.
+- [x] UT-056–UT-062 — append-only selections, atomic imports, empty replay, Player classification, and paging.
+- [x] IT-008, IT-010 — separate Player classification and opponent logical isolation.
+- [x] IT-024 — no-fetch manual preview reference/complete/invalid flows.
+- [x] IT-026–IT-035 — binding rejection, rollback, dedupe/version/refresh, selection, classification, identity fencing, and restart lifecycle.
 
 ## Success Criteria
 

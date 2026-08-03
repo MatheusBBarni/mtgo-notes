@@ -50,8 +50,10 @@ pub fn validate_official_artifact_url(value: &str) -> Result<String, RepoError> 
     let host = url.host_str().ok_or(RepoError::UnsafeSource)?;
     if url.scheme() != "https"
         || !matches!(host, "mtgo.com" | "www.mtgo.com")
+        || url.port().is_some()
         || !url.username().is_empty()
         || url.password().is_some()
+        || url.query().is_some()
         || url.fragment().is_some()
         || url.path().trim_matches('/').is_empty()
         || !url.path().to_ascii_lowercase().contains("deck")

@@ -74,7 +74,7 @@ fn evidence(identity: &PlayerIdentity, source_key: &str, digest: &str) -> Player
         source_digest: digest.into(),
         preview_digest: "b".repeat(64),
         payload: json!({"points": 10}),
-        selected_fields: json!({"points": true}),
+        selected_fields: json!({"points": true, "source_nickname": true, "attribution_url": true}),
         supersedes_evidence_id: None,
         cards: Vec::new(),
     }
@@ -86,7 +86,7 @@ fn batch(identity: &PlayerIdentity, source_key: &str, digest: &str) -> VerifiedI
         command_kind: "import_public_result".into(),
         request_digest: "c".repeat(64),
         evidence: evidence(identity, source_key, digest),
-        selected_fields: json!({"points": true}),
+        selected_fields: json!({"points": true, "source_nickname": true, "attribution_url": true}),
         cards: Vec::new(),
         now: UtcMillis::new(102).expect("time"),
     }
@@ -246,15 +246,17 @@ fn it_005_import_is_atomic_and_isolated() {
         .create_identity(PlayerId::new(), "Alpha", UtcMillis::new(1).expect("time"))
         .expect("identity");
     let mut import = batch(&identity, "source-a", &"a".repeat(64));
-    import.cards.push(PlayerCard {
+    let card = PlayerCard {
         oracle_id: "oracle-1".into(),
         display_name: "Card".into(),
         zone: "main".into(),
         quantity: 2,
         basic_land: false,
-    });
+    };
+    import.cards.push(card.clone());
+    import.evidence.cards.push(card);
     import.evidence.kind = EvidenceKind::OfficialPublishedDecklist;
-    import.evidence.payload = json!({"contents": "complete_deck"});
+    import.evidence.payload = json!({"contents": "complete_deck", "points": 10});
     let outcome = store.import_batch(import).expect("batch");
     let page = store.evidence_page(&identity.id, None, 10).expect("page");
     assert_eq!(page.items[0].cards.len(), 1);
@@ -319,4 +321,70 @@ fn it_006_and_it_007_receipts_replay_and_immutable_versions() {
             .len(),
         3
     );
+}
+
+#[test]
+fn ut_016_and_ut_053_to_055_source_versions_are_scoped_and_linked() {
+    let fixture = Fixture::new();
+    let runtime = fixture.boot();
+    let store = PlayerStore::new(&runtime.repository);
+    let identity = store
+        .create_identity(PlayerId::new(), "Alpha", UtcMillis::new(1).expect("time"))
+        .expect("identity");
+    let first = store
+        .import_batch(batch(&identity, "source-a", &"a".repeat(64)))
+        .expect("first");
+    let mut changed = batch(&identity, "source-a", &"b".repeat(64));
+    changed.evidence.supersedes_evidence_id = Some(first.evidence_id.clone());
+    let second = store.import_batch(changed).expect("second");
+    let page = store.evidence_page(&identity.id, None, 10).expect("page");
+    let linked = page
+        .items
+        .iter()
+        .find(|item| item.id == second.evidence_id)
+        .expect("linked");
+    assert_eq!(linked.supersedes_evidence_id, Some(first.evidence_id));
+    let distinct = store
+        .import_batch(batch(&identity, "source-b", &"b".repeat(64)))
+        .expect("distinct");
+    assert_ne!(distinct.evidence_id, second.evidence_id);
+}
+
+#[test]
+fn ut_056_to_062_selection_revisions_are_append_only_and_paged() {
+    let fixture = Fixture::new();
+    let runtime = fixture.boot();
+    let store = PlayerStore::new(&runtime.repository);
+    let identity = store
+        .create_identity(PlayerId::new(), "Alpha", UtcMillis::new(1).expect("time"))
+        .expect("identity");
+    let imported = store
+        .import_batch(batch(&identity, "source-a", &"a".repeat(64)))
+        .expect("import");
+    let revision = store
+        .append_selection(AppendSelectionInput {
+            operation_key: Some(PlayerOperationKey::new()),
+            command_kind: "update_selection".into(),
+            request_digest: Some("d".repeat(64)),
+            evidence_id: imported.evidence_id.clone(),
+            expected_revision: Revision::INITIAL,
+            selected_fields: json!({
+                "points": false,
+                "source_nickname": true,
+                "attribution_url": true
+            }),
+            now: UtcMillis::new(2).expect("time"),
+        })
+        .expect("selection");
+    assert_eq!(revision.revision_number.get(), 2);
+    let history = store
+        .selection_history(&imported.evidence_id)
+        .expect("history");
+    assert_eq!(history.len(), 2);
+    assert_eq!(history[0].revision_number.get(), 1);
+    assert_eq!(history[1].revision_number.get(), 2);
+    let page = store
+        .evidence_page(&identity.id, None, 1)
+        .expect("first page");
+    assert_eq!(page.items.len(), 1);
 }

@@ -12,7 +12,8 @@ use super::census::{
     exact_matches,
 };
 use super::models::{
-    PlayerId, PlayerOperationKey, PlayerSourceRoute, canonical_digest, census_source_key,
+    PlayerId, PlayerOperationKey, PlayerPreviewToken, PlayerSourceRoute, canonical_digest,
+    census_source_key,
 };
 
 pub const SESSION_TTL_MILLIS: i64 = 15 * 60 * 1_000;
@@ -222,6 +223,19 @@ pub struct CandidatePreview {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ManualPreviewBinding {
+    pub token: PlayerPreviewToken,
+    pub player_identity_id: PlayerId,
+    pub identity_revision: Revision,
+    pub source_key: String,
+    pub source_digest: String,
+    pub preview_digest: String,
+    pub operation_key: PlayerOperationKey,
+    pub generation: u64,
+    pub expires_at: UtcMillis,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct EmptyLookupResult {
     pub provider_id: String,
     pub lookup_nickname: String,
@@ -269,6 +283,7 @@ struct RuntimeState {
     provider_retry_at: Option<UtcMillis>,
     audit: VecDeque<LookupAuditSummary>,
     ephemeral_replay: BTreeMap<String, LookupOutcome>,
+    manual_previews: BTreeMap<PlayerPreviewToken, ManualPreviewBinding>,
 }
 
 pub struct PlayerPublicResultsRuntime {
@@ -310,6 +325,7 @@ impl PlayerPublicResultsRuntime {
         state.generation = state.generation.saturating_add(1);
         state.active = None;
         state.ephemeral_replay.clear();
+        state.manual_previews.clear();
         Ok(())
     }
 
@@ -352,6 +368,7 @@ impl PlayerPublicResultsRuntime {
         state.generation = state.generation.saturating_add(1);
         state.active = None;
         state.ephemeral_replay.clear();
+        state.manual_previews.clear();
         Ok(())
     }
 
@@ -651,6 +668,102 @@ impl PlayerPublicResultsRuntime {
         Ok(state.ephemeral_replay.get(operation_key.as_str()).cloned())
     }
 
+    /// Bind a pure manual preview to the trusted identity/session fence.  The
+    /// token is opaque to the renderer and expires at the exact TTL boundary.
+    #[allow(clippy::too_many_arguments)]
+    pub fn bind_manual_preview(
+        &self,
+        token: PlayerPreviewToken,
+        player_identity_id: PlayerId,
+        identity_revision: Revision,
+        source_key: String,
+        source_digest: String,
+        preview_digest: String,
+        operation_key: PlayerOperationKey,
+        now: UtcMillis,
+    ) -> Result<ManualPreviewBinding, PlayerError> {
+        if !is_digest(&source_digest) || !is_digest(&preview_digest) {
+            return Err(PlayerError::new(
+                PlayerErrorCode::InvalidRequest,
+                PlayerRecovery::None,
+            ));
+        }
+        let mut state = self.state.lock().map_err(|_| {
+            PlayerError::new(PlayerErrorCode::ProviderUnavailable, PlayerRecovery::Retry)
+        })?;
+        state.generation = state.generation.saturating_add(1);
+        let binding = ManualPreviewBinding {
+            token: token.clone(),
+            player_identity_id,
+            identity_revision,
+            source_key,
+            source_digest,
+            preview_digest,
+            operation_key,
+            generation: state.generation,
+            expires_at: UtcMillis::new(now.get() + SESSION_TTL_MILLIS).map_err(|_| {
+                PlayerError::new(PlayerErrorCode::InvalidRequest, PlayerRecovery::None)
+            })?,
+        };
+        state.manual_previews.insert(token, binding.clone());
+        Ok(binding)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn verify_manual_preview(
+        &self,
+        token: &PlayerPreviewToken,
+        player_identity_id: &PlayerId,
+        identity_revision: Revision,
+        source_key: &str,
+        source_digest: &str,
+        preview_digest: &str,
+        now: UtcMillis,
+    ) -> Result<ManualPreviewBinding, PlayerError> {
+        let state = self.state.lock().map_err(|_| {
+            PlayerError::new(PlayerErrorCode::ProviderUnavailable, PlayerRecovery::Retry)
+        })?;
+        let binding = state.manual_previews.get(token).ok_or_else(|| {
+            PlayerError::new(PlayerErrorCode::PreviewMismatch, PlayerRecovery::Retry)
+        })?;
+        if now >= binding.expires_at {
+            return Err(PlayerError::new(
+                PlayerErrorCode::PreviewExpired,
+                PlayerRecovery::Retry,
+            ));
+        }
+        if binding.player_identity_id != *player_identity_id
+            || binding.identity_revision != identity_revision
+            || binding.source_key != source_key
+            || binding.source_digest != source_digest
+            || binding.preview_digest != preview_digest
+        {
+            return Err(PlayerError::new(
+                PlayerErrorCode::PreviewMismatch,
+                PlayerRecovery::Retry,
+            ));
+        }
+        Ok(binding.clone())
+    }
+
+    pub fn invalidate_identity(&self, player_identity_id: &PlayerId) -> Result<(), PlayerError> {
+        let mut state = self.state.lock().map_err(|_| {
+            PlayerError::new(PlayerErrorCode::ProviderUnavailable, PlayerRecovery::Retry)
+        })?;
+        state
+            .manual_previews
+            .retain(|_, binding| binding.player_identity_id != *player_identity_id);
+        if state
+            .active
+            .as_ref()
+            .is_some_and(|session| session.player_identity_id == *player_identity_id)
+        {
+            state.active = None;
+            state.generation = state.generation.saturating_add(1);
+        }
+        Ok(())
+    }
+
     pub fn audit_snapshot(&self) -> Result<Vec<LookupAuditSummary>, PlayerError> {
         let state = self.state.lock().map_err(|_| {
             PlayerError::new(PlayerErrorCode::ProviderUnavailable, PlayerRecovery::Retry)
@@ -664,6 +777,7 @@ impl PlayerPublicResultsRuntime {
         })?;
         state.active = None;
         state.ephemeral_replay.clear();
+        state.manual_previews.clear();
         state.audit.clear();
         state.generation = state.generation.saturating_add(1);
         Ok(())
