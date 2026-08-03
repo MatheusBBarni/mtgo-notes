@@ -20,10 +20,15 @@ Reach an evidence-backed, implementation-ready decision set for a Player workspa
 
 - [Research Official MTGO Player Data](https://github.com/MatheusBBarni/mtgo-notes/issues/2) — Daybreak Census MOCS leaderboard data is the only gated machine-readable candidate; official decklists remain browser/manual.
 - [Research Reputable Third-Party MTGO Player Data](https://github.com/MatheusBBarni/mtgo-notes/issues/3) — Surveyed third-party sources support only explicit browser corroboration, not permissioned automated V1 ingestion.
+- [Choose the V1 Public Source Strategy](https://github.com/MatheusBBarni/mtgo-notes/issues/4) — Census is the sole gated adapter; official MTGO and MTGTop8 remain explicit handoffs, with official-URL manual imports and fail-closed degradation.
+- [Define the Public Result Evidence Model](https://github.com/MatheusBBarni/mtgo-notes/issues/5) — Player-owned typed evidence separates provenance, source identity, content change, selective persistence, and scoped empty outcomes.
+- [Define the Trusted-Host Lookup Contract](https://github.com/MatheusBBarni/mtgo-notes/issues/6) — Closed host-owned commands enforce independent consent, approved routes, session fencing, bounded execution, content-free audit, and typed failure.
+- [Prototype the Player Workspace](https://github.com/MatheusBBarni/mtgo-notes/issues/7) — Approved a compact responsive two-column Player tab with inline consent and identity editing, selective preview import, explicit refresh, and distinct non-destructive empty and failure states.
+- [Approve the Player Identity Implementation Handoff](https://github.com/MatheusBBarni/mtgo-notes/issues/8) — Approved the additive Compozy planning handoff, implementation breakdown, explicit acceptance boundaries, and separate local, packaged-Windows, and live-provider verification gates.
 
 ## Not yet specified
 
-- The implementation breakdown and final verification matrix remain fog until the provider, evidence model, security contract, and Player workspace behavior are resolved.
+- None. The V1 planning handoff is approved; implementation and delivery remain outside this map.
 
 ## Out of scope
 
