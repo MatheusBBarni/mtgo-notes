@@ -173,6 +173,112 @@ textarea:focus-visible,
   margin-block: 0;
 }
 
+.player-workspace,
+.player-workspace * {
+  min-width: 0;
+}
+
+.player-status {
+  margin-bottom: var(--space-md);
+}
+
+.player-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.player-main,
+.player-evidence {
+  min-width: 0;
+}
+
+.player-warning {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.player-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.player-source-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-block: var(--space-sm);
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.player-source-row:last-child {
+  border-bottom: 0;
+}
+
+.player-source-row > div:first-child {
+  display: grid;
+  gap: var(--space-xxs);
+}
+
+.player-candidate {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-soft);
+}
+
+.player-evidence-list {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player-evidence-list li {
+  display: grid;
+  gap: var(--space-xxs);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.player-evidence-list a {
+  color: var(--color-link);
+  overflow-wrap: anywhere;
+}
+
+.player-deletion-dialog {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-destructive);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-soft);
+}
+
+@media (max-width: 900px) {
+  .player-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .player-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .player-source-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 .notebook-layout {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);

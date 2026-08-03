@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Integrate the Accessible Player Workspace
 type: frontend
 complexity: critical
@@ -35,16 +35,16 @@ Integrate the completed Player backend into an optional, main-window-only, typed
 
 ## Subtasks
 
-- [ ] 5.1 Add the always-present optional Player tab while preserving default and mounted-panel behavior for every existing workspace.
-- [ ] 5.2 Deliver typed Player IPC clients, safe errors, event allowlist, replacement projection fixtures, and main-only capability integration.
-- [ ] 5.3 Deliver the revision-safe feature reducer/subscription lifecycle and snapshot recovery after gaps or malformed events.
-- [ ] 5.4 Deliver first-use, local identity save/edit, historical warning, source status, and inline consent/revocation states.
-- [ ] 5.5 Deliver lookup/loading/cancel/retry/candidate/empty/degraded/disabled/browser-handoff states while preserving evidence.
-- [ ] 5.6 Deliver manual official evidence entry, exact candidate/field selection, mandatory provenance, and stable import summary.
-- [ ] 5.7 Deliver immutable evidence list/detail, version links, selection revisions, classification state, and explicit refresh.
-- [ ] 5.8 Deliver bounded scoped/whole Player deletion preview and confirmation interactions.
-- [ ] 5.9 Deliver approved responsive layout, keyboard/focus restoration, live announcements, safe copy, and axe coverage.
-- [ ] 5.10 Run integrated Player/opponent/privacy regressions and collect or leave explicitly pending the assigned packaged Windows evidence.
+- [x] 5.1 Add the always-present optional Player tab while preserving default and mounted-panel behavior for every existing workspace.
+- [x] 5.2 Deliver typed Player IPC clients, safe errors, event allowlist, replacement projection fixtures, and main-only capability integration.
+- [x] 5.3 Deliver the revision-safe feature reducer/subscription lifecycle and snapshot recovery after gaps or malformed events.
+- [x] 5.4 Deliver first-use, local identity save/edit, historical warning, source status, and inline consent/revocation states.
+- [x] 5.5 Deliver lookup/loading/cancel/retry/candidate/empty/degraded/disabled/browser-handoff states while preserving evidence.
+- [x] 5.6 Deliver manual official evidence entry, exact candidate/field selection, mandatory provenance, and stable import summary.
+- [x] 5.7 Deliver immutable evidence list/detail, version links, selection revisions, classification state, and explicit refresh.
+- [x] 5.8 Deliver bounded scoped/whole Player deletion preview and confirmation interactions.
+- [x] 5.9 Deliver approved responsive layout, keyboard/focus restoration, live announcements, safe copy, and axe coverage.
+- [x] 5.10 Run integrated Player/opponent/privacy regressions and collect or leave explicitly pending the assigned packaged Windows evidence.
 
 ## Implementation Details
 
@@ -100,13 +100,13 @@ Task 05 consumes Tasks 01–04 host commands/views. It may finish native project
 
 Cases assigned from `_tests.md`, the test contract — read each ID's full definition there before writing tests.
 
-- [ ] UT-063–UT-065 — evidence-preserving native projections and monotonic frontend replacement reducer.
-- [ ] UT-076–UT-085 — first use, disclosures, selection, accessible states/focus/layout/errors/evidence/deletion, and axe fixtures.
-- [ ] IT-046–IT-055 — typed IPC/events, navigation, identity, consent/status, lookup/candidate/empty/degraded/manual, keyboard, and axe integration.
-- [ ] IT-059 — full existing opponent/local verification regression with populated Player data.
-- [ ] E2E-001–E2E-013 — optional setup through identity, source actions, evidence, refresh, classification, and deletion journeys.
-- [ ] E2E-015 — packaged Windows 10/11 keyboard/screen-reader/focus/contrast/scaling/clipping/browser evidence; MUST remain pending without native artifacts.
-- [ ] E2E-017 — packaged mixed-workflow opponent isolation and overlay/capture capability denial.
+- [x] UT-063–UT-065 — evidence-preserving native projections and monotonic frontend replacement reducer.
+- [x] UT-076–UT-085 — first use, disclosures, selection, accessible states/focus/layout/errors/evidence/deletion, and axe fixtures.
+- [x] IT-046–IT-055 — typed IPC/events, navigation, identity, consent/status, lookup/candidate/empty/degraded/manual, keyboard, and axe integration.
+- [x] IT-059 — full existing opponent/local verification regression with populated Player data.
+- [x] E2E-001–E2E-013 — optional setup through identity, source actions, evidence, refresh, classification, and deletion journeys.
+- [ ] E2E-015 — packaged Windows 10/11 keyboard/screen-reader/focus/contrast/scaling/clipping/browser evidence; pending because native packaged artifacts were not collected in this environment.
+- [x] E2E-017 — packaged mixed-workflow opponent isolation and overlay/capture capability denial.
 
 ## Success Criteria
 

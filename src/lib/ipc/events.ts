@@ -7,6 +7,7 @@ export const HOST_EVENT_NAMES = [
   "provider://status-v1",
   "classifier://progress-v1",
   "update://status-v1",
+  "player://workspace-v1",
 ] as const;
 
 export type HostEventName = (typeof HOST_EVENT_NAMES)[number];

@@ -7,10 +7,17 @@ import { PortabilityWorkspace } from "../features/portability/PortabilityWorkspa
 import { OperationalSettings } from "../features/settings/OperationalSettings";
 import { DetectionOnboarding } from "../features/onboarding/DetectionOnboarding";
 import { LiveEncounterControls } from "../features/encounter/LiveEncounterControls";
+import { PlayerWorkspace } from "../features/player/PlayerWorkspace";
 import { StatusLabel } from "../ui/primitives";
 
 type WorkspaceView =
-  "settings" | "detection" | "encounter" | "decks" | "notebook" | "portability";
+  | "settings"
+  | "detection"
+  | "encounter"
+  | "decks"
+  | "notebook"
+  | "portability"
+  | "player";
 
 const WORKSPACE_VIEWS: readonly {
   label: string;
@@ -22,6 +29,7 @@ const WORKSPACE_VIEWS: readonly {
   { label: "Deck context", value: "decks" },
   { label: "Notebook", value: "notebook" },
   { label: "Backup & export", value: "portability" },
+  { label: "Player", value: "player" },
 ];
 
 export function MainApp() {
@@ -99,6 +107,13 @@ export function MainApp() {
           shouldForceMount
         >
           <PortabilityWorkspace />
+        </Tabs.Panel>
+        <Tabs.Panel
+          className="main-workspace-panel"
+          id="player"
+          shouldForceMount
+        >
+          <PlayerWorkspace />
         </Tabs.Panel>
       </Tabs>
     </main>

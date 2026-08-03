@@ -27,6 +27,9 @@ vi.mock("../../src/features/notebook/NotebookWorkspace", () => ({
 vi.mock("../../src/features/portability/PortabilityWorkspace", () => ({
   PortabilityWorkspace: () => <section>Backup and export content</section>,
 }));
+vi.mock("../../src/features/player/PlayerWorkspace", () => ({
+  PlayerWorkspace: () => <section>Player content</section>,
+}));
 
 import { MainApp } from "../../src/main/MainApp";
 
@@ -36,7 +39,7 @@ describe("main workspace navigation", () => {
     render(<MainApp />);
 
     const tabs = screen.getAllByRole("tab");
-    expect(tabs).toHaveLength(6);
+    expect(tabs).toHaveLength(7);
     expect(
       screen.getByRole("tablist", { name: "Workspace sections" }),
     ).toBeVisible();
