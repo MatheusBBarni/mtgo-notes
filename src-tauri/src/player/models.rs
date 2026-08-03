@@ -118,7 +118,7 @@ pub enum DeckContentsKind {
     CompleteDeck,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PlayerSourceRoute {
     CensusMocs,

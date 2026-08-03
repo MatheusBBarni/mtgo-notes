@@ -312,3 +312,68 @@ commands.allow = ["apply_portability_rollback"]
 identifier = "allow-discard-portability-rollback"
 description = "Allows the main window to discard a confirmed encrypted rollback."
 commands.allow = ["discard_portability_rollback"]
+
+[[permission]]
+identifier = "allow-get-player-workspace"
+description = "Allows only the main Player window to read its complete bounded workspace projection."
+commands.allow = ["get_player_workspace"]
+
+[[permission]]
+identifier = "allow-save-player-identity"
+description = "Allows only the main Player window to save its local singleton identity."
+commands.allow = ["save_player_identity"]
+
+[[permission]]
+identifier = "allow-get-public-provider-status"
+description = "Allows only the main Player window to read source-specific public provider status."
+commands.allow = ["get_public_provider_status"]
+
+[[permission]]
+identifier = "allow-set-public-provider-consent"
+description = "Allows only the main Player window to grant or revoke a reviewed Player source consent."
+commands.allow = ["set_public_provider_consent"]
+
+[[permission]]
+identifier = "allow-start-public-result-lookup"
+description = "Allows only the main Player window to start an explicitly admitted Player lookup."
+commands.allow = ["start_public_result_lookup"]
+
+[[permission]]
+identifier = "allow-cancel-public-result-lookup"
+description = "Allows only the main Player window to cancel its active Player lookup."
+commands.allow = ["cancel_public_result_lookup"]
+
+[[permission]]
+identifier = "allow-refresh-public-results"
+description = "Allows only the main Player window to explicitly refresh Player public results."
+commands.allow = ["refresh_public_results"]
+
+[[permission]]
+identifier = "allow-create-manual-evidence-preview"
+description = "Allows only the main Player window to create a bounded no-fetch manual evidence preview."
+commands.allow = ["create_manual_evidence_preview"]
+
+[[permission]]
+identifier = "allow-open-public-source"
+description = "Allows only the main Player window to open a host-built approved public source route."
+commands.allow = ["open_public_source"]
+
+[[permission]]
+identifier = "allow-import-public-result"
+description = "Allows only the main Player window to import an already validated Player preview."
+commands.allow = ["import_public_result"]
+
+[[permission]]
+identifier = "allow-update-evidence-selection"
+description = "Allows only the main Player window to append a Player evidence selection revision."
+commands.allow = ["update_evidence_selection"]
+
+[[permission]]
+identifier = "allow-preview-player-deletion"
+description = "Allows only the main Player window to preview a bounded Player deletion scope."
+commands.allow = ["preview_player_deletion"]
+
+[[permission]]
+identifier = "allow-confirm-player-deletion"
+description = "Allows only the main Player window to confirm a previously bound Player deletion scope."
+commands.allow = ["confirm_player_deletion"]

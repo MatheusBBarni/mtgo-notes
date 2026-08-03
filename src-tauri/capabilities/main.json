@@ -66,6 +66,19 @@
     "allow-list-portability-rollbacks",
     "allow-confirm-portability-rollback",
     "allow-apply-portability-rollback",
-    "allow-discard-portability-rollback"
+    "allow-discard-portability-rollback",
+    "allow-get-player-workspace",
+    "allow-save-player-identity",
+    "allow-get-public-provider-status",
+    "allow-set-public-provider-consent",
+    "allow-start-public-result-lookup",
+    "allow-cancel-public-result-lookup",
+    "allow-refresh-public-results",
+    "allow-create-manual-evidence-preview",
+    "allow-open-public-source",
+    "allow-import-public-result",
+    "allow-update-evidence-selection",
+    "allow-preview-player-deletion",
+    "allow-confirm-player-deletion"
   ]
 }

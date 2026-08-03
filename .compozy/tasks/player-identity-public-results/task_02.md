@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Build the Fail-Closed Public Source Runtime
 type: backend
 complexity: critical
@@ -34,16 +34,16 @@ Deliver the trusted native boundary for source status, independent consent, cond
 
 ## Subtasks
 
-- [ ] 2.1 Establish the Player runtime lifecycle, disabled provider default, host-only reviewed configuration, and synthetic test injection.
-- [ ] 2.2 Deliver independent route status and versioned consent admission for Census, official MTGO, and MTGTop8.
-- [ ] 2.3 Enforce caller, payload, operation-key, identity, and trusted-phase admission before any effect.
-- [ ] 2.4 Deliver fixed-route Census request construction and strict redirect/timeout/byte/row/schema validation.
-- [ ] 2.5 Deliver exact local nickname matching plus distinct candidate, scoped-empty, cancelled, and degraded outcomes.
-- [ ] 2.6 Deliver the one-lookup lease, immutable work leases, cancellation, expiry, cooldown, retry-time, and generation fencing.
-- [ ] 2.7 Deliver bounded content-free runtime audit and ephemeral replay semantics.
-- [ ] 2.8 Deliver host-built, separately consented official/MTGTop8 browser handoffs with at-most-once receipts.
-- [ ] 2.9 Establish the main-only Player command/event/capability admission seam consumed by later command handlers.
-- [ ] 2.10 Deliver privacy and gate-honesty verification without claiming live or Windows completion.
+- [x] 2.1 Establish the Player runtime lifecycle, disabled provider default, host-only reviewed configuration, and synthetic test injection.
+- [x] 2.2 Deliver independent route status and versioned consent admission for Census, official MTGO, and MTGTop8.
+- [x] 2.3 Enforce caller, payload, operation-key, identity, and trusted-phase admission before any effect.
+- [x] 2.4 Deliver fixed-route Census request construction and strict redirect/timeout/byte/row/schema validation.
+- [x] 2.5 Deliver exact local nickname matching plus distinct candidate, scoped-empty, cancelled, and degraded outcomes.
+- [x] 2.6 Deliver the one-lookup lease, immutable work leases, cancellation, expiry, cooldown, retry-time, and generation fencing.
+- [x] 2.7 Deliver bounded content-free runtime audit and ephemeral replay semantics.
+- [x] 2.8 Deliver host-built, separately consented official/MTGTop8 browser handoffs with at-most-once receipts.
+- [x] 2.9 Establish the main-only Player command/event/capability admission seam consumed by later command handlers.
+- [x] 2.10 Deliver privacy and gate-honesty verification without claiming live or Windows completion.
 
 ## Implementation Details
 

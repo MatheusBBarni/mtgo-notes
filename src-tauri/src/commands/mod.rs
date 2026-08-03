@@ -7,6 +7,7 @@ pub(crate) mod encounters;
 pub(crate) mod history;
 pub(crate) mod identity;
 pub(crate) mod notes;
+pub(crate) mod player;
 pub(crate) mod portability;
 pub(crate) mod privacy;
 pub(crate) mod providers;
