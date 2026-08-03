@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Establish the Player Bounded-Context Persistence Foundation
 type: backend
 complexity: critical
@@ -33,14 +33,14 @@ Create the complete durable foundation for Player identity and public-result evi
 
 ## Subtasks
 
-- [ ] 1.1 Define the isolated Player module and closed identity, evidence, provenance, source-key, digest, selection, empty-outcome, tombstone, classification, and receipt types.
-- [ ] 1.2 Establish bounded nickname validation and deterministic canonical serialization/digest behavior for all later trusted-host inputs.
-- [ ] 1.3 Add migration v3 with the full Player table graph, constraints, indexes, and Player-only foreign keys.
-- [ ] 1.4 Register v3 in the checksummed forward migration chain and preserve rollback, foreign-key, and integrity guarantees.
-- [ ] 1.5 Deliver singleton Player identity reads/writes and optimistic revision behavior through a bounded repository adapter.
-- [ ] 1.6 Deliver immutable evidence, card, selection, empty-outcome, classification-run, tombstone, and paging persistence primitives required by later services.
-- [ ] 1.7 Deliver content-free durable receipt binding and exact replay/mismatched-input behavior inside mutation transactions.
-- [ ] 1.8 Prove encrypted migration, reopen, transaction, idempotency, revision, and opponent-isolation behavior with real temporary notebooks.
+- [x] 1.1 Define the isolated Player module and closed identity, evidence, provenance, source-key, digest, selection, empty-outcome, tombstone, classification, and receipt types.
+- [x] 1.2 Establish bounded nickname validation and deterministic canonical serialization/digest behavior for all later trusted-host inputs.
+- [x] 1.3 Add migration v3 with the full Player table graph, constraints, indexes, and Player-only foreign keys.
+- [x] 1.4 Register v3 in the checksummed forward migration chain and preserve rollback, foreign-key, and integrity guarantees.
+- [x] 1.5 Deliver singleton Player identity reads/writes and optimistic revision behavior through a bounded repository adapter.
+- [x] 1.6 Deliver immutable evidence, card, selection, empty-outcome, classification-run, tombstone, and paging persistence primitives required by later services.
+- [x] 1.7 Deliver content-free durable receipt binding and exact replay/mismatched-input behavior inside mutation transactions.
+- [x] 1.8 Prove encrypted migration, reopen, transaction, idempotency, revision, and opponent-isolation behavior with real temporary notebooks.
 
 ## Implementation Details
 

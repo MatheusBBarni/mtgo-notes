@@ -7,7 +7,9 @@ use sha2::{Digest, Sha256};
 use crate::domain::{RepoError, UtcMillis};
 use crate::notebook::connection::EncryptedConnection;
 use crate::notebook::key::DatabaseKey;
-use crate::notebook::schema::{INITIAL_SCHEMA, RETIRED_TAGS_MIGRATION, SCHEMA_VERSION};
+use crate::notebook::schema::{
+    INITIAL_SCHEMA, PLAYER_MIGRATION, RETIRED_TAGS_MIGRATION, RETIRED_TAGS_SCHEMA_VERSION,
+};
 
 #[derive(Clone, Debug)]
 pub struct Migration {
@@ -54,7 +56,8 @@ impl Default for MigrationManager {
     fn default() -> Self {
         Self::new(vec![
             Migration::new(1, INITIAL_SCHEMA),
-            Migration::new(SCHEMA_VERSION, RETIRED_TAGS_MIGRATION),
+            Migration::new(RETIRED_TAGS_SCHEMA_VERSION, RETIRED_TAGS_MIGRATION),
+            Migration::new(3, PLAYER_MIGRATION),
         ])
     }
 }

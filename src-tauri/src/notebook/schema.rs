@@ -1,4 +1,5 @@
-pub const SCHEMA_VERSION: i64 = 2;
+pub const SCHEMA_VERSION: i64 = 3;
+pub const RETIRED_TAGS_SCHEMA_VERSION: i64 = 2;
 
 pub const INITIAL_SCHEMA: &str = r#"
 CREATE TABLE schema_migrations (
@@ -451,3 +452,145 @@ END;
 "#;
 
 pub const RETIRED_TAGS_MIGRATION: &str = "ALTER TABLE tendency_tags ADD COLUMN retired_at INTEGER;";
+
+/// Dedicated Player bounded-context schema.  Every foreign key in this
+/// migration points at another Player table; the Player graph never reaches
+/// opponent profiles, encounters, decks, snapshots, or opponent consent.
+pub const PLAYER_MIGRATION: &str = r#"
+CREATE TABLE player_identities (
+    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+    id TEXT NOT NULL UNIQUE CHECK (
+        length(id) = 36 AND substr(id, 15, 1) = '7'
+        AND lower(substr(id, 20, 1)) IN ('8','9','a','b')
+    ),
+    display_nickname TEXT NOT NULL CHECK (length(trim(display_nickname)) > 0),
+    normalized_nickname TEXT NOT NULL CHECK (length(normalized_nickname) > 0),
+    created_at INTEGER NOT NULL CHECK (created_at >= 0),
+    updated_at INTEGER NOT NULL CHECK (updated_at >= 0),
+    revision INTEGER NOT NULL CHECK (revision > 0)
+);
+
+CREATE TABLE player_source_consents (
+    player_identity_id TEXT NOT NULL REFERENCES player_identities(id) ON DELETE CASCADE,
+    route TEXT NOT NULL CHECK (route IN ('census_mocs', 'official_mtgo_browser', 'mtg_top8_browser')),
+    disclosure_version TEXT NOT NULL CHECK (length(disclosure_version) > 0),
+    outbound_fields_json TEXT NOT NULL,
+    fields_digest TEXT NOT NULL CHECK (length(fields_digest) = 64),
+    granted_at INTEGER NOT NULL CHECK (granted_at >= 0),
+    revision INTEGER NOT NULL CHECK (revision > 0),
+    PRIMARY KEY (player_identity_id, route)
+);
+
+CREATE TABLE player_evidence (
+    id TEXT PRIMARY KEY CHECK (
+        length(id) = 36 AND substr(id, 15, 1) = '7'
+        AND lower(substr(id, 20, 1)) IN ('8','9','a','b')
+    ),
+    player_identity_id TEXT NOT NULL REFERENCES player_identities(id) ON DELETE CASCADE,
+    evidence_schema_version INTEGER NOT NULL CHECK (evidence_schema_version > 0),
+    kind TEXT NOT NULL CHECK (kind IN ('mocs_leaderboard_entry', 'official_published_decklist')),
+    provenance_mode TEXT NOT NULL CHECK (provenance_mode IN ('provider_observed', 'user_attested_official_source')),
+    provider_id TEXT NOT NULL CHECK (length(trim(provider_id)) > 0),
+    attribution_url TEXT NOT NULL CHECK (length(trim(attribution_url)) > 0),
+    canonical_source_url TEXT,
+    lookup_nickname TEXT NOT NULL CHECK (length(trim(lookup_nickname)) > 0),
+    source_nickname TEXT NOT NULL CHECK (length(trim(source_nickname)) > 0),
+    exact_match_rule TEXT NOT NULL CHECK (length(trim(exact_match_rule)) > 0),
+    scope_json TEXT NOT NULL,
+    observed_at INTEGER NOT NULL CHECK (observed_at >= 0),
+    imported_at INTEGER NOT NULL CHECK (imported_at >= 0),
+    source_key TEXT NOT NULL CHECK (length(source_key) > 0),
+    source_digest TEXT NOT NULL CHECK (length(source_digest) = 64),
+    preview_digest TEXT NOT NULL CHECK (length(preview_digest) = 64),
+    payload_json TEXT NOT NULL,
+    selected_fields_json TEXT NOT NULL,
+    supersedes_evidence_id TEXT REFERENCES player_evidence(id) ON DELETE RESTRICT,
+    UNIQUE (player_identity_id, source_key, source_digest)
+);
+CREATE INDEX player_evidence_identity_time
+    ON player_evidence(player_identity_id, imported_at DESC, id DESC);
+CREATE INDEX player_evidence_source_chain
+    ON player_evidence(player_identity_id, source_key, imported_at DESC, id DESC);
+
+CREATE TABLE player_evidence_cards (
+    evidence_id TEXT NOT NULL REFERENCES player_evidence(id) ON DELETE CASCADE,
+    oracle_id TEXT NOT NULL CHECK (length(trim(oracle_id)) > 0),
+    display_name TEXT NOT NULL CHECK (length(trim(display_name)) > 0),
+    zone TEXT NOT NULL CHECK (zone IN ('main', 'sideboard', 'companion', 'other')),
+    quantity INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 250),
+    basic_land INTEGER NOT NULL DEFAULT 0 CHECK (basic_land IN (0, 1)),
+    PRIMARY KEY (evidence_id, oracle_id, zone)
+);
+CREATE INDEX player_evidence_cards_evidence ON player_evidence_cards(evidence_id);
+
+CREATE TABLE player_selection_revisions (
+    id TEXT PRIMARY KEY CHECK (
+        length(id) = 36 AND substr(id, 15, 1) = '7'
+        AND lower(substr(id, 20, 1)) IN ('8','9','a','b')
+    ),
+    evidence_id TEXT NOT NULL REFERENCES player_evidence(id) ON DELETE CASCADE,
+    revision_number INTEGER NOT NULL CHECK (revision_number > 0),
+    selected_fields_json TEXT NOT NULL,
+    created_at INTEGER NOT NULL CHECK (created_at >= 0),
+    UNIQUE (evidence_id, revision_number)
+);
+CREATE INDEX player_selection_evidence_revision
+    ON player_selection_revisions(evidence_id, revision_number DESC);
+
+CREATE TABLE player_empty_outcomes (
+    id TEXT PRIMARY KEY CHECK (
+        length(id) = 36 AND substr(id, 15, 1) = '7'
+        AND lower(substr(id, 20, 1)) IN ('8','9','a','b')
+    ),
+    player_identity_id TEXT NOT NULL REFERENCES player_identities(id) ON DELETE CASCADE,
+    provider_id TEXT NOT NULL CHECK (length(trim(provider_id)) > 0),
+    lookup_nickname TEXT NOT NULL CHECK (length(trim(lookup_nickname)) > 0),
+    exact_match_rule TEXT NOT NULL CHECK (length(trim(exact_match_rule)) > 0),
+    scope_json TEXT NOT NULL,
+    provider_configuration_version TEXT NOT NULL CHECK (length(trim(provider_configuration_version)) > 0),
+    completed_at INTEGER NOT NULL CHECK (completed_at >= 0),
+    operation_key TEXT NOT NULL CHECK (length(operation_key) = 36),
+    UNIQUE (player_identity_id, operation_key)
+);
+CREATE INDEX player_empty_identity_time
+    ON player_empty_outcomes(player_identity_id, completed_at DESC, id DESC);
+
+CREATE TABLE player_classification_runs (
+    id TEXT PRIMARY KEY CHECK (
+        length(id) = 36 AND substr(id, 15, 1) = '7'
+        AND lower(substr(id, 20, 1)) IN ('8','9','a','b')
+    ),
+    evidence_id TEXT NOT NULL REFERENCES player_evidence(id) ON DELETE CASCADE,
+    classifier_version TEXT NOT NULL CHECK (length(trim(classifier_version)) > 0),
+    classifier_digest TEXT NOT NULL CHECK (length(classifier_digest) = 64),
+    result_id TEXT NOT NULL,
+    result_name TEXT NOT NULL,
+    method TEXT NOT NULL CHECK (method IN ('signature', 'knn', 'unsupported')),
+    confidence REAL NOT NULL CHECK (confidence >= 0.0 AND confidence <= 1.0),
+    created_at INTEGER NOT NULL CHECK (created_at >= 0),
+    UNIQUE (evidence_id, classifier_version, classifier_digest)
+);
+CREATE INDEX player_classification_evidence_time
+    ON player_classification_runs(evidence_id, created_at DESC, id DESC);
+
+CREATE TABLE player_tombstones (
+    entity_kind TEXT NOT NULL CHECK (length(trim(entity_kind)) > 0),
+    entity_id TEXT NOT NULL CHECK (length(trim(entity_id)) > 0),
+    player_identity_id TEXT NOT NULL,
+    deleted_at INTEGER NOT NULL CHECK (deleted_at >= 0),
+    PRIMARY KEY (entity_kind, entity_id)
+);
+CREATE INDEX player_tombstones_identity ON player_tombstones(player_identity_id, deleted_at DESC);
+
+CREATE TABLE player_operation_receipts (
+    operation_key TEXT NOT NULL CHECK (length(operation_key) = 36),
+    command_kind TEXT NOT NULL CHECK (length(trim(command_kind)) > 0),
+    player_identity_id TEXT NOT NULL REFERENCES player_identities(id) ON DELETE CASCADE,
+    request_digest TEXT NOT NULL CHECK (length(request_digest) = 64),
+    result_code TEXT NOT NULL CHECK (length(trim(result_code)) > 0),
+    result_locator TEXT,
+    created_at INTEGER NOT NULL CHECK (created_at >= 0),
+    PRIMARY KEY (operation_key, command_kind)
+);
+CREATE INDEX player_receipts_identity ON player_operation_receipts(player_identity_id, created_at DESC);
+"#;

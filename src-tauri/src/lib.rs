@@ -8,6 +8,7 @@ pub mod encounters;
 pub mod ipc;
 pub mod notebook;
 pub mod operations;
+pub mod player;
 pub mod portability;
 pub mod providers;
 pub mod resilience;
