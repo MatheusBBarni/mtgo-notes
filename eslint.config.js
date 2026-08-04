@@ -11,6 +11,7 @@ export default tseslint.config(
       "node_modules",
       "src-tauri/gen",
       "src-tauri/target",
+      ".scratch",
       ".compozy-runtime",
       "eslint.config.js",
     ],
