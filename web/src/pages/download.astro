@@ -1,0 +1,16 @@
+---
+import DownloadCta from "../components/DownloadCta.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { copy } from "../content/copy";
+---
+
+<BaseLayout title="Download — MTGO Opponent Notes">
+  <h1>Download</h1>
+  <DownloadCta />
+  <p id="download-version"></p>
+  <p>{copy.requirements}</p>
+  <p>{copy.liveAttachHint}</p>
+  <p>
+    <a href={copy.githubReleasesHref}>{copy.githubReleasesLabel}</a>
+  </p>
+</BaseLayout>

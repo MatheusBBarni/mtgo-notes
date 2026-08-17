@@ -83,3 +83,35 @@ jobs:
 
             Unzip and run `MTGONotes.App.exe`. Log into MTGO before launching if you want live attach.
             This build does not log on to MTGO and does not write into the client.
+
+      - name: Set up Node.js for R2 publish
+        if: github.ref_type == 'tag'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Hash zip for latest.json
+        if: github.ref_type == 'tag'
+        id: hash
+        shell: pwsh
+        run: |
+          $zip = "MTGONotes-${{ steps.version.outputs.version }}-win-x64.zip"
+          $sha256 = (Get-FileHash -Algorithm SHA256 $zip).Hash.ToLower()
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "sha256=$sha256"
+
+      - name: Publish zip to R2
+        if: github.ref_type == 'tag'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          zip="MTGONotes-${version}-win-x64.zip"
+          versioned="releases/windows/MTGONotes-${version}-win-x64.zip"
+          uploaded_at="$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")"
+          sha256="${{ steps.hash.outputs.sha256 }}"
+          printf '%s\n' "{\"version\":\"${version}\",\"filename\":\"${zip}\",\"sha256\":\"${sha256}\",\"uploadedAt\":\"${uploaded_at}\"}" > latest.json
+          npx --yes wrangler r2 object put "mtgo-notes-releases/${versioned}" --file "$zip" --remote
+          npx --yes wrangler r2 object put "mtgo-notes-releases/releases/windows/latest.zip" --file "$zip" --remote
+          npx --yes wrangler r2 object put "mtgo-notes-releases/releases/windows/latest.json" --file latest.json --remote

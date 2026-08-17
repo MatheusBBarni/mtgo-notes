@@ -1,0 +1,25 @@
+{
+  "name": "mtgo-notes-web",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "build": "astro build",
+    "test:build": "astro build && vitest run --config vitest.build.config.ts",
+    "preview": "astro preview",
+    "test:e2e": "astro build && playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "astro": "^7.2.2"
+  }
+}

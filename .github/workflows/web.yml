@@ -1,0 +1,46 @@
+name: Website
+
+on:
+  push:
+    paths:
+      - "web/**"
+      - ".github/workflows/web.yml"
+      - ".github/workflows/release.yml"
+  pull_request:
+    paths:
+      - "web/**"
+      - ".github/workflows/web.yml"
+      - ".github/workflows/release.yml"
+
+jobs:
+  test:
+    name: Test brochure site
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build output assertions
+        run: npm run test:build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e
