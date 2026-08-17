@@ -13,15 +13,35 @@ const latestZipKey = "releases/windows/latest.zip";
 const latestMetaKey = "releases/windows/latest.json";
 const fallbackFilename = "MTGONotes-win-x64.zip";
 
+function emptyStateRedirect(): Response {
+  return new Response(null, {
+    status: 302,
+    headers: { Location: "/download?available=0" },
+  });
+}
+
+export async function onRequest(context: {
+  request: Request;
+  env: ReleaseEnv;
+}): Promise<Response> {
+  if (context.request.method !== "GET") {
+    return new Response(null, { status: 405 });
+  }
+  return onRequestGet(context);
+}
+
 export async function onRequestGet(context: {
   env: ReleaseEnv;
 }): Promise<Response> {
-  const zip = await context.env.RELEASES.get(latestZipKey);
+  let zip: R2GetResult | null;
+  try {
+    zip = await context.env.RELEASES.get(latestZipKey);
+  } catch {
+    return emptyStateRedirect();
+  }
+
   if (zip === null) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: "/download?available=0" },
-    });
+    return emptyStateRedirect();
   }
 
   const filename = await readFilename(context.env.RELEASES);
@@ -38,12 +58,12 @@ export async function onRequestGet(context: {
 async function readFilename(
   releases: ReleaseEnv["RELEASES"],
 ): Promise<string> {
-  const meta = await releases.get(latestMetaKey);
-  if (meta === null) {
-    return fallbackFilename;
-  }
-
   try {
+    const meta = await releases.get(latestMetaKey);
+    if (meta === null) {
+      return fallbackFilename;
+    }
+
     const parsed = await meta.json();
     if (
       parsed &&
