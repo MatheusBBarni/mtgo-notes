@@ -40,7 +40,7 @@ internal static partial class OverlayHwnd
         }
 
         appWindow.IsShownInSwitchers = false;
-        appWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
+        appWindow.Resize(new global::Windows.Graphics.SizeInt32(width, height));
     }
 
     public static void ShowWithoutActivating(Window window)

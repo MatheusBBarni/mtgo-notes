@@ -21,7 +21,7 @@ public sealed partial class MainWindow : Window
         _host = host;
         InitializeComponent();
         Title = "MTGO Opponent Notes";
-        AppWindow.Resize(new Windows.Graphics.SizeInt32(1200, 800));
+        AppWindow.Resize(new global::Windows.Graphics.SizeInt32(1200, 800));
         LoadSettings();
         Bind(host.Session.CurrentView);
     }
@@ -61,7 +61,7 @@ public sealed partial class MainWindow : Window
         var result = await dialog.ShowAsync();
         _host.Settings.LiveAttachAcknowledged = true;
         _host.Settings.LiveAttachEnabled = result == ContentDialogResult.Primary;
-        _ = _host.SaveSettings();
+        _host.SaveSettings();
         LoadSettings();
     }
 
