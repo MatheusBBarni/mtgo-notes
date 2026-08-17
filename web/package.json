@@ -8,7 +8,9 @@
   "scripts": {
     "test": "vitest run",
     "build": "astro build",
-    "test:build": "astro build && vitest run --config vitest.build.config.ts"
+    "test:build": "astro build && vitest run --config vitest.build.config.ts",
+    "preview": "astro preview",
+    "test:e2e": "astro build && playwright test"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
