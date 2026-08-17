@@ -1,3 +1,5 @@
+import { ReleaseKeys } from "../../src/lib/releaseKeys";
+
 interface R2GetResult {
   json(): Promise<unknown>;
 }
@@ -8,8 +10,7 @@ interface ReleaseEnv {
   };
 }
 
-const latestZipKey = "releases/windows/latest.zip";
-const latestMetaKey = "releases/windows/latest.json";
+
 
 export async function onRequest(context: {
   request: Request;
@@ -26,7 +27,7 @@ export async function onRequestGet(context: {
 }): Promise<Response> {
   let zip: R2GetResult | null;
   try {
-    zip = await context.env.RELEASES.get(latestZipKey);
+    zip = await context.env.RELEASES.get(ReleaseKeys.latestZip);
   } catch {
     return Response.json({ available: false });
   }
@@ -36,7 +37,7 @@ export async function onRequestGet(context: {
   }
 
   try {
-    const meta = await context.env.RELEASES.get(latestMetaKey);
+    const meta = await context.env.RELEASES.get(ReleaseKeys.latestMeta);
     if (meta === null) {
       return Response.json({ available: true });
     }

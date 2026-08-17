@@ -1,3 +1,5 @@
+import { ReleaseKeys } from "../../src/lib/releaseKeys";
+
 interface R2GetResult {
   body: ReadableStream<Uint8Array> | null;
   json(): Promise<unknown>;
@@ -9,8 +11,6 @@ interface ReleaseEnv {
   };
 }
 
-const latestZipKey = "releases/windows/latest.zip";
-const latestMetaKey = "releases/windows/latest.json";
 const fallbackFilename = "MTGONotes-win-x64.zip";
 
 function emptyStateRedirect(): Response {
@@ -35,7 +35,7 @@ export async function onRequestGet(context: {
 }): Promise<Response> {
   let zip: R2GetResult | null;
   try {
-    zip = await context.env.RELEASES.get(latestZipKey);
+    zip = await context.env.RELEASES.get(ReleaseKeys.latestZip);
   } catch {
     return emptyStateRedirect();
   }
@@ -59,7 +59,7 @@ async function readFilename(
   releases: ReleaseEnv["RELEASES"],
 ): Promise<string> {
   try {
-    const meta = await releases.get(latestMetaKey);
+    const meta = await releases.get(ReleaseKeys.latestMeta);
     if (meta === null) {
       return fallbackFilename;
     }
