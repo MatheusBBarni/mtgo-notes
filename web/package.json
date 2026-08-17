@@ -6,7 +6,9 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "build": "astro build",
+    "test:build": "astro build && vitest run --config vitest.build.config.ts"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
