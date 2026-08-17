@@ -1,7 +1,15 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { copy } from "../content/copy";
 ---
 
 <BaseLayout title="Live attach — MTGO Opponent Notes">
   <h1>Live attach</h1>
+  <p>{copy.liveAttach.off}</p>
+  <p>{copy.liveAttach.on}</p>
+  <p>{copy.liveAttach.noLogin}</p>
+  <p>{copy.liveAttach.videre}</p>
+  <aside class="hero-card-dark">
+    <p>{copy.liveAttach.risk}</p>
+  </aside>
 </BaseLayout>

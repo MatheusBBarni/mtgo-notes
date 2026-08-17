@@ -141,3 +141,16 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+.hero-card-dark {
+  background: var(--color-surface-dark);
+  color: var(--color-on-dark);
+  border-radius: var(--radius-lg);
+  padding: 48px;
+}
+
+.screenshot-placeholder {
+  background: var(--color-signature-cream);
+  border-radius: 10px;
+  padding: 24px;
+}
