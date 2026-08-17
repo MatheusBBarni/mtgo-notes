@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace MTGONotes.App.Native;
 
-internal sealed partial class TrayIconService : IDisposable
+internal sealed class TrayIconService : IDisposable
 {
     private const uint NimAdd = 0;
     private const uint NimDelete = 2;
@@ -98,34 +98,29 @@ internal sealed partial class TrayIconService : IDisposable
         public int Y;
     }
 
-    [LibraryImport("shell32.dll", EntryPoint = "Shell_NotifyIconW")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool Shell_NotifyIcon(uint dwMessage, ref NotifyIconData lpData);
+    [DllImport("shell32.dll", EntryPoint = "Shell_NotifyIconW")]
+    private static extern bool Shell_NotifyIcon(uint dwMessage, ref NotifyIconData lpData);
 
-    [LibraryImport("user32.dll", EntryPoint = "LoadIconW")]
-    private static partial nint LoadIcon(nint hInstance, nint lpIconName);
+    [DllImport("user32.dll", EntryPoint = "LoadIconW")]
+    private static extern nint LoadIcon(nint hInstance, nint lpIconName);
 
-    [LibraryImport("user32.dll", SetLastError = true)]
-    private static partial nint CreatePopupMenu();
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern nint CreatePopupMenu();
 
-    [LibraryImport("user32.dll", EntryPoint = "AppendMenuW", StringMarshalling = StringMarshalling.Utf16)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool AppendMenu(nint hMenu, uint uFlags, nuint uIDNewItem, string lpNewItem);
+    [DllImport("user32.dll", EntryPoint = "AppendMenuW", CharSet = CharSet.Unicode)]
+    private static extern bool AppendMenu(nint hMenu, uint uFlags, nuint uIDNewItem, string lpNewItem);
 
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool DestroyMenu(nint hMenu);
+    [DllImport("user32.dll")]
+    private static extern bool DestroyMenu(nint hMenu);
 
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetCursorPos(out Point lpPoint);
+    [DllImport("user32.dll")]
+    private static extern bool GetCursorPos(out Point lpPoint);
 
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool SetForegroundWindow(nint hWnd);
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(nint hWnd);
 
-    [LibraryImport("user32.dll")]
-    private static partial int TrackPopupMenu(
+    [DllImport("user32.dll")]
+    private static extern int TrackPopupMenu(
         nint hMenu,
         uint uFlags,
         int x,

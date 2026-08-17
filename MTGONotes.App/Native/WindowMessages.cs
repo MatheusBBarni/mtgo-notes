@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 
 namespace MTGONotes.App.Native;
 
-internal sealed partial class WindowMessages : IDisposable
+internal sealed class WindowMessages : IDisposable
 {
     public const uint WmHotkey = 0x0312;
     public const uint WmAppTray = 0x8001;
@@ -62,18 +62,16 @@ internal sealed partial class WindowMessages : IDisposable
 
     private delegate nint SubclassProc(nint hWnd, uint msg, nint wParam, nint lParam, nuint uIdSubclass, nint dwRefData);
 
-    [LibraryImport("comctl32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool SetWindowSubclass(
+    [DllImport("comctl32.dll", SetLastError = true)]
+    private static extern bool SetWindowSubclass(
         nint hWnd,
         SubclassProc pfnSubclass,
         nuint uIdSubclass,
         nuint dwRefData);
 
-    [LibraryImport("comctl32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool RemoveWindowSubclass(nint hWnd, SubclassProc pfnSubclass, nuint uIdSubclass);
+    [DllImport("comctl32.dll", SetLastError = true)]
+    private static extern bool RemoveWindowSubclass(nint hWnd, SubclassProc pfnSubclass, nuint uIdSubclass);
 
-    [LibraryImport("comctl32.dll")]
-    private static partial nint DefSubclassProc(nint hWnd, uint uMsg, nint wParam, nint lParam);
+    [DllImport("comctl32.dll")]
+    private static extern nint DefSubclassProc(nint hWnd, uint uMsg, nint wParam, nint lParam);
 }

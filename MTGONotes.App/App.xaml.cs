@@ -14,7 +14,7 @@ public partial class App : Application
         SingleInstance = SingleInstance.Claim();
     }
 
-    public SingleInstance? SingleInstance { get; }
+    internal SingleInstance? SingleInstance { get; }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
