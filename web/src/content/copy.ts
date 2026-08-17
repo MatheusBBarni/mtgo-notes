@@ -6,6 +6,13 @@ export const copy = {
   contrast:
     "We store your observations. We do not log the board. This is not a board logger.",
   downloadLabel: "Download for Windows",
+  emptyState: "A Windows build is not published yet.",
+  requirements:
+    "Windows 10 22H2 / Windows 11 x64. Unzip and run MTGONotes.App.exe.",
+  liveAttachHint:
+    "Live attach is optional. Log into MTGO before launching if you want it.",
+  githubReleasesLabel: "also on GitHub Releases",
+  githubReleasesHref: "https://github.com/MatheusBBarni/mtgo-notes/releases",
   beats: [
     {
       title: "confirm opponent",

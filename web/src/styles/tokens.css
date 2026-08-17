@@ -111,6 +111,10 @@ a {
   background: var(--color-primary-active);
 }
 
+.button-primary:disabled {
+  opacity: 0.5;
+}
+
 .hero .pitch {
   color: var(--color-ink);
   font-size: 20px;
