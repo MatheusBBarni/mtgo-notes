@@ -5,6 +5,8 @@ bin/
 obj/
 .vs/
 TestResults/
+publish/
+*.zip
 *.user
 *.suo
 .DS_Store

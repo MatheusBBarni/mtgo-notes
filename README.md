@@ -27,3 +27,14 @@ Live attach is read-only and never calls `Client.LogOn`.
 - `MTGONotes.Live` — read-only MTGO attach abstractions
 - `tests/` — portable xUnit suites
 - `__oldversion__/` — frozen Tauri/React/Rust tree
+
+## Release
+
+Push a version tag or run **Release Windows app** from Actions:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+That publishes a draft-or-tagged GitHub Release with `MTGONotes-<version>-win-x64.zip`.

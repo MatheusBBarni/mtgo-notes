@@ -1,0 +1,83 @@
+name: Release Windows app
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version without the v prefix (used only when not tagging)"
+        required: false
+        default: "0.1.0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-windows-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish WinUI Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            raw="${GITHUB_REF_NAME}"
+            version="${raw#v}"
+          else
+            version="${{ github.event.inputs.version }}"
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${version}" >> "$GITHUB_OUTPUT"
+          echo "name=MTGO Opponent Notes v${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Run portable tests
+        run: |
+          dotnet test tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj --nologo
+
+      - name: Publish self-contained Windows x64 app
+        run: >
+          dotnet publish MTGONotes.App/MTGONotes.App.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:PublishSingleFile=false
+          -o publish/win-x64
+          --nologo
+
+      - name: Zip published app
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish/win-x64/* -DestinationPath "MTGONotes-${{ steps.version.outputs.version }}-win-x64.zip" -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.name }}
+          draft: ${{ github.ref_type != 'tag' }}
+          generate_release_notes: true
+          files: MTGONotes-${{ steps.version.outputs.version }}-win-x64.zip
+          body: |
+            Unpackaged WinUI 3 Windows x64 build.
+
+            Unzip and run `MTGONotes.App.exe`. Log into MTGO before launching if you want live attach.
+            This build does not log on to MTGO and does not write into the client.
