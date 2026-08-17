@@ -30,9 +30,11 @@ public sealed partial class MainWindow : Window
     {
         var handle = view.ConfirmedHandle ?? "No confirmed opponent";
         PhaseText.Text = $"{view.Phase} — {handle}";
-        LiveText.Text = _host.Live.IsAttached
-            ? "Live attach: connected"
-            : "Live attach: waiting for a logged-in MTGO client";
+        LiveText.Text = _host.StartupWarning is { } warning
+            ? $"Notebook unavailable: {warning}"
+            : _host.Live.IsAttached
+                ? "Live attach: connected"
+                : "Live attach: waiting for a logged-in MTGO client";
         NotesList.ItemsSource = view.CurrentObservations.Select(note => note.Text).ToArray();
         if (!_host.Session.AuthorizeHistory().IsSuccess)
         {

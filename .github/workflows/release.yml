@@ -39,11 +39,13 @@ jobs:
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             raw="${GITHUB_REF_NAME}"
             version="${raw#v}"
+            tag="${raw}"
           else
             version="${{ github.event.inputs.version }}"
+            tag="v${version}-draft.${GITHUB_SHA:0:7}"
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "tag=v${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "name=MTGO Opponent Notes v${version}" >> "$GITHUB_OUTPUT"
 
       - name: Run portable tests

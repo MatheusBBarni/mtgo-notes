@@ -1,5 +1,6 @@
 using MTGONotes.Core.Classifier;
 using MTGONotes.Core.Detection;
+using MTGONotes.Core.Encounters;
 using MTGONotes.Core.Domain;
 using MTGONotes.Core.Live;
 using MTGONotes.Core.Portability;
@@ -11,6 +12,17 @@ namespace MTGONotes.Core.Tests;
 
 public sealed class RemainingPhasesTests
 {
+    [Theory]
+    [InlineData("manual", "manual")]
+    [InlineData("mtgosdk", "mtgosdk")]
+    [InlineData("mtgosdk-abc123", "mtgosdk")]
+    [InlineData("uia", "uia")]
+    [InlineData("unknown", "manual")]
+    public void Encounter_source_normalizes_live_sessions(string raw, string expected)
+    {
+        Assert.Equal(expected, EncounterSource.Normalize(raw));
+    }
+
     [Fact]
     public void Settings_round_trip_on_disk()
     {

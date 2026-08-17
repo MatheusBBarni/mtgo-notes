@@ -99,7 +99,14 @@ public sealed class LiveAttachSource : IContextSource, IDisposable
 
     public void Dispose()
     {
-        _run?.Cancel();
+        try
+        {
+            StopAsync().GetAwaiter().GetResult();
+        }
+        catch (Exception)
+        {
+        }
+
         _client.Dispose();
     }
 

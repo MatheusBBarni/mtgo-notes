@@ -1,6 +1,5 @@
 using MTGOSDK.API;
 using MTGOSDK.API.Play;
-using MTGOSDK.API.Users;
 using MTGONotes.Core.Disclosure;
 using MTGONotes.Live;
 

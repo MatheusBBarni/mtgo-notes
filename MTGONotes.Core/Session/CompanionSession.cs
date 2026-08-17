@@ -435,7 +435,7 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
                     start.ProfileId,
                     now,
                     generation,
-                    source is "uia" or "ocr" or "mtgosdk" ? source : "manual"),
+                    EncounterSource.Normalize(source)),
                 EncounterAction.FinishEncounter finish => _store.FinishEncounter(finish.EncounterId, now),
                 EncounterAction.ChangePhase change => _store.ChangePhase(change.EncounterId, change.To),
                 EncounterAction.MarkIncomplete incomplete => _store.MarkIncomplete(
