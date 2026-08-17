@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj" />
+  </Folder>
+  <Project Path="MTGONotes.App/MTGONotes.App.csproj" />
+  <Project Path="MTGONotes.Core/MTGONotes.Core.csproj" />
+</Solution>

@@ -2,7 +2,7 @@
 
 Branch: `feat/winui-rewrite`
 Date: 2026-08-17
-Status: planning — no application code until Phase 0 passes
+Status: in progress — Phase 0 overlay spike waived by product owner (2026-08-17). Overlay HWND behavior lives in `MTGONotes.App`.
 
 This is the execution plan for replacing the Tauri 2 / React / Rust host with an unpackaged WinUI 3 / .NET 10 app that attaches to MTGO through MTGOSDK and keeps the existing opponent-notes product.
 
@@ -134,21 +134,9 @@ MTGONotes.App.exe
 
 Do these in order. Do not start N+1 if N's exit criteria are red. No "while we're here" tracker features.
 
-### Phase 0 — Overlay spike (1–3 days, Windows only)
+### Phase 0 — Overlay spike — waived
 
-New throwaway project is fine. It can live at `winui/spikes/OverlaySpike/`.
-
-Prove:
-
-1. Unpackaged WinUI 3 window starts with Windows App SDK bootstrap (`WindowsPackageType=None`).
-2. `OverlappedPresenter.IsAlwaysOnTop = true`, no title bar, skip taskbar.
-3. Show without activating (`AppWindow` / HWND `SW_SHOWNOACTIVATE` or equivalent). MTGO-sized dummy stays focused.
-4. Click-through via `WS_EX_LAYERED | WS_EX_TRANSPARENT`. Clicks hit the dummy window.
-5. A hotkey or tray action expands: clear transparent style, accept clicks, focus a text box, Escape collapses and restores click-through.
-6. Drag position remembered per monitor. Default 360×220.
-7. DPI 100% and 150% do not break hit-testing.
-
-Exit: a short `spikes/OVERLAY.md` with the exact HWND styles that worked. If this fails, stop. Do not invent the rest of the app on a shell we cannot ship.
+Do not create `winui/spikes/`. Click-through, `SW_SHOWNOACTIVATE`, and expand/collapse live in `MTGONotes.App` (`Native/OverlayHwnd.cs`). Validate on the first Windows run of the real app.
 
 ### Phase 1 — Solution skeleton
 
@@ -321,7 +309,7 @@ Port priority from `_tests.md`: UT/IT cases for encounter, disclosure, consent, 
 
 | Phase | Elapsed | Depends on Windows? |
 |---|---|---|
-| 0 Overlay spike | 1–3 days | Yes |
+| 0 Overlay spike | waived | implemented in App |
 | 1 Skeleton | 1 day | Yes to confirm unpackaged |
 | 2 Core | 3–5 days | No |
 | 3 Data | 4–6 days | Partial (DPAPI) |
@@ -332,16 +320,11 @@ Port priority from `_tests.md`: UT/IT cases for encounter, disclosure, consent, 
 | 8 Portability | 5–8 days | Partial |
 | 9 Cutover | 3–5 days | Yes |
 
-This is a full product port, not a weekend host swap. Phase 0 is the only work that should start next.
+This is a full product port, not a weekend host swap. Work starts at Phase 1/2 in `winui/`.
 
-## 10. First coding session (when you say go)
+## 10. First coding session
 
-On a Windows machine, in this branch:
-
-1. Create `winui/spikes/OverlaySpike/` unpackaged WinUI 3 app.
-2. Do not create the full solution, do not add MTGOSDK, do not touch `src-tauri`.
-3. Write `winui/spikes/OVERLAY.md` with results.
-4. Only then start Phase 1.
+Phase 0 was waived. Implement Core + App shell on this branch.
 
 ## 11. Open items that do not block Phase 0
 
@@ -358,4 +341,4 @@ On a Windows machine, in this branch:
 - No `Client.LogOn`.
 - No deleting the Tauri tree before Phase 9.
 - No "while we're here" redesign of disclosure, backup, or classifier rules.
-- Overlay spike is the first code. Everything else waits.
+- Overlay HWND code ships in the real app, not a spike.
