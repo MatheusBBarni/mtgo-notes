@@ -29,4 +29,10 @@ public interface INotebookStore
         UtcMillis createdAt);
 
     Result<IReadOnlyList<ObservationView>> ListObservations(EntityId encounterId);
+
+    Result<HistoryPage> SearchHistory(string query, int pageSize = 50);
+
+    Result<IReadOnlyList<EncounterSummary>> ListRecentEncounters(int limit = 50);
+
+    Result<NotebookDump> ExportLogical();
 }

@@ -64,6 +64,13 @@ _Avoid_: Settings, opponent profile
 > **Dev:** "Does entering a nickname create an **Opponent profile**?"
 > **Domain expert:** "No. It creates the local **Player identity**; any **Public player results** are separately discovered and source-attributed."
 
+## Live attach
+
+On the WinUI rewrite branch, opponent and phase candidates may come from a
+read-only attach to an already-logged-in MTGO process. That attach requires
+explicit consent, never calls `LogOn`, and never writes into MTGO. Confirmation
+is still required before persistent history changes.
+
 ## Flagged ambiguities
 
 - "Profile" previously referred only to an opponent record; the app owner is now the distinct **Player identity**.

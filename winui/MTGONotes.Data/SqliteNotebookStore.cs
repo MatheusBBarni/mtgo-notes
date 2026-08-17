@@ -282,6 +282,161 @@ public sealed class SqliteNotebookStore : INotebookStore, IDisposable
         }
     }
 
+    public Result<HistoryPage> SearchHistory(string query, int pageSize = 50)
+    {
+        if (pageSize is <= 0 or > 100 || string.IsNullOrWhiteSpace(query))
+        {
+            return Result<HistoryPage>.Fail(RepoError.InvalidRequest);
+        }
+
+        lock (_gate)
+        {
+            try
+            {
+                var tokens = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Select(token => token.Replace("\"", string.Empty))
+                    .Where(token => token.Length > 0)
+                    .Select(token => $"\"{token}\"");
+                var match = string.Join(" AND ", tokens);
+                if (match.Length == 0)
+                {
+                    return Result<HistoryPage>.Fail(RepoError.InvalidRequest);
+                }
+
+                using var command = _connection.Connection.CreateCommand();
+                command.CommandText =
+                    """
+                    SELECT entity_type, entity_id, CAST(sort_ms AS INTEGER), content
+                    FROM history_fts
+                    WHERE history_fts MATCH $q
+                    ORDER BY CAST(sort_ms AS INTEGER) DESC, entity_id DESC
+                    LIMIT $limit
+                    """;
+                command.Parameters.AddWithValue("$q", match);
+                command.Parameters.AddWithValue("$limit", pageSize + 1);
+                using var reader = command.ExecuteReader();
+                var items = new List<HistoryHit>();
+                while (reader.Read())
+                {
+                    items.Add(new HistoryHit(
+                        reader.GetString(0),
+                        reader.GetString(1),
+                        reader.GetInt64(2),
+                        reader.GetString(3)));
+                }
+
+                var hasMore = items.Count > pageSize;
+                if (hasMore)
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+
+                return Result<HistoryPage>.Ok(new HistoryPage(items, hasMore));
+            }
+            catch (SqliteException)
+            {
+                return Result<HistoryPage>.Fail(RepoError.InvalidRequest);
+            }
+        }
+    }
+
+    public Result<IReadOnlyList<EncounterSummary>> ListRecentEncounters(int limit = 50)
+    {
+        lock (_gate)
+        {
+            try
+            {
+                using var command = _connection.Connection.CreateCommand();
+                command.CommandText =
+                    """
+                    SELECT e.id, e.profile_id, p.primary_handle, e.phase, e.status, e.started_at
+                    FROM encounters e
+                    JOIN opponent_profiles p ON p.id = e.profile_id
+                    WHERE e.deleted_at IS NULL AND p.deleted_at IS NULL
+                    ORDER BY e.started_at DESC, e.id DESC
+                    LIMIT $limit
+                    """;
+                command.Parameters.AddWithValue("$limit", limit);
+                using var reader = command.ExecuteReader();
+                var rows = new List<EncounterSummary>();
+                while (reader.Read())
+                {
+                    rows.Add(new EncounterSummary(
+                        EntityId.Parse(reader.GetString(0)),
+                        EntityId.Parse(reader.GetString(1)),
+                        reader.GetString(2),
+                        reader.GetString(3),
+                        reader.GetString(4),
+                        reader.GetInt64(5)));
+                }
+
+                return Result<IReadOnlyList<EncounterSummary>>.Ok(rows);
+            }
+            catch (Exception ex) when (ex is SqliteException or DomainException)
+            {
+                return Result<IReadOnlyList<EncounterSummary>>.Fail(RepoError.NotebookInvalid);
+            }
+        }
+    }
+
+    public Result<NotebookDump> ExportLogical()
+    {
+        lock (_gate)
+        {
+            try
+            {
+                var profiles = new List<LogicalProfile>();
+                using (var command = _connection.Connection.CreateCommand())
+                {
+                    command.CommandText =
+                        "SELECT id, primary_handle, normalized_handle, created_at FROM opponent_profiles WHERE deleted_at IS NULL";
+                    using var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        profiles.Add(new LogicalProfile(
+                            reader.GetString(0),
+                            reader.GetString(1),
+                            reader.GetString(2),
+                            reader.GetInt64(3)));
+                    }
+                }
+
+                var encounters = new List<LogicalEncounter>();
+                using (var command = _connection.Connection.CreateCommand())
+                {
+                    command.CommandText =
+                        """
+                        SELECT e.id, e.profile_id, p.primary_handle, e.phase, e.status, e.started_at
+                        FROM encounters e
+                        JOIN opponent_profiles p ON p.id = e.profile_id
+                        WHERE e.deleted_at IS NULL
+                        ORDER BY e.started_at
+                        """;
+                    using var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var encounterId = EntityId.Parse(reader.GetString(0));
+                        var notes = ListObservationsUnlocked(encounterId);
+                        encounters.Add(new LogicalEncounter(
+                            reader.GetString(0),
+                            reader.GetString(1),
+                            reader.GetString(2),
+                            reader.GetString(3),
+                            reader.GetString(4),
+                            reader.GetInt64(5),
+                            notes));
+                    }
+                }
+
+                return Result<NotebookDump>.Ok(new NotebookDump(2, profiles, encounters));
+            }
+            catch (Exception ex) when (ex is SqliteException or DomainException)
+            {
+                return Result<NotebookDump>.Fail(RepoError.NotebookInvalid);
+            }
+        }
+    }
+
     public Result<long> SchemaVersion()
     {
         lock (_gate)
@@ -291,6 +446,30 @@ public sealed class SqliteNotebookStore : INotebookStore, IDisposable
     }
 
     public void Dispose() => _connection.Dispose();
+
+    private IReadOnlyList<LogicalObservation> ListObservationsUnlocked(EntityId encounterId)
+    {
+        using var command = _connection.Connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT id, encounter_id, text, created_at FROM observations
+            WHERE encounter_id = $id AND deleted_at IS NULL
+            ORDER BY created_at
+            """;
+        command.Parameters.AddWithValue("$id", encounterId.AsString());
+        using var reader = command.ExecuteReader();
+        var notes = new List<LogicalObservation>();
+        while (reader.Read())
+        {
+            notes.Add(new LogicalObservation(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetInt64(3)));
+        }
+
+        return notes;
+    }
 
     private bool HandleTaken(SqliteTransaction transaction, string normalizedHandle, string? exceptProfileId)
     {

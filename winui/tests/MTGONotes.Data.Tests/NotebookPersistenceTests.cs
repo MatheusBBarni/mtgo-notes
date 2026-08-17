@@ -106,6 +106,26 @@ public sealed class NotebookPersistenceTests
     }
 
     [Fact]
+    public void History_search_and_export_include_saved_notes()
+    {
+        using var directory = new TempNotebook();
+        using var store = NotebookBootstrap
+            .Initialize(directory.DatabasePath, directory.KeyPath, new ScopedProtector(6))
+            .Value!;
+        var session = new CompanionSession(store);
+        Assert.True(session.EnterOpponent("SearchMe").IsSuccess);
+        Assert.True(session.SaveObservation("Surgical leftover").IsSuccess);
+        var hits = store.SearchHistory("Surgical");
+        Assert.True(hits.IsSuccess);
+        Assert.Contains(hits.Value!.Items, item => item.Content.Contains("Surgical"));
+        var dump = store.ExportLogical();
+        Assert.Contains(dump.Value!.Profiles, profile => profile.Handle == "SearchMe");
+        Assert.Contains(
+            dump.Value.Encounters.SelectMany(item => item.Observations),
+            note => note.Text == "Surgical leftover");
+    }
+
+    [Fact]
     public void Duplicate_handle_is_an_identity_conflict()
     {
         using var directory = new TempNotebook();

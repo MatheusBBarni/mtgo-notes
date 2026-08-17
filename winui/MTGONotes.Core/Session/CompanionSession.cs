@@ -363,6 +363,54 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
 
     public Result AuthorizeHistory() => _disclosure.Authorize(QueryKind.SearchHistory, CurrentView.Phase);
 
+    public Result<HistoryPage> SearchHistory(string query)
+    {
+        lock (_gate)
+        {
+            var authorized = AuthorizeHistory();
+            if (!authorized.IsSuccess)
+            {
+                return Result<HistoryPage>.Fail(authorized.Error!.Value);
+            }
+
+            return _store is null
+                ? Result<HistoryPage>.Ok(new HistoryPage([], false))
+                : _store.SearchHistory(query);
+        }
+    }
+
+    public Result<IReadOnlyList<EncounterSummary>> ListRecentEncounters()
+    {
+        lock (_gate)
+        {
+            var authorized = AuthorizeHistory();
+            if (!authorized.IsSuccess)
+            {
+                return Result<IReadOnlyList<EncounterSummary>>.Fail(authorized.Error!.Value);
+            }
+
+            return _store is null
+                ? Result<IReadOnlyList<EncounterSummary>>.Ok([])
+                : _store.ListRecentEncounters();
+        }
+    }
+
+    public Result<NotebookDump> ExportLogical()
+    {
+        lock (_gate)
+        {
+            var authorized = AuthorizeHistory();
+            if (!authorized.IsSuccess)
+            {
+                return Result<NotebookDump>.Fail(authorized.Error!.Value);
+            }
+
+            return _store is null
+                ? Result<NotebookDump>.Ok(new NotebookDump(2, [], []))
+                : _store.ExportLogical();
+        }
+    }
+
     private Result Persist(
         IReadOnlyList<EncounterAction> actions,
         string source,

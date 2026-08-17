@@ -2,26 +2,44 @@
 
 ## Project Structure & Module Organization
 
-This is a private, local-first Tauri 2 desktop application. React/TypeScript renderer code lives in `src/`: `main/`, `overlay/`, and `capture/` are separate capability-isolated entrypoints; reusable workflows belong in `features/`, IPC clients in `lib/ipc/`, and shared controls in `ui/`. The Rust host is under `src-tauri/src/`, organized by domain (`notebook/`, `detection/`, `portability/`, `providers/`) with Tauri handlers in `commands/`. Frontend unit and integration tests live in `tests/unit/` and `tests/integration/`; Rust integration contracts live in `src-tauri/tests/`. Static fonts and icons belong in `assets/`, while bundled native resources belong in `src-tauri/resources/`.
+The active rewrite is `winui/`: `MTGONotes.Core` (domain, disclosure, session),
+`MTGONotes.Data` (SQLCipher + DPAPI), `MTGONotes.Live` (read-only MTGO attach
+abstractions), and `MTGONotes.App` (unpackaged WinUI 3 shell). Tests live in
+`winui/tests/`.
+
+The Tauri 2 host remains frozen in `src/` (React entrypoints) and `src-tauri/`
+until a Windows install of the WinUI app opens a real notebook. Do not delete
+it in this branch.
 
 ## Build, Test, and Development Commands
 
-- `npm ci` installs the pinned dependency graph (Node `22.23.1`, npm `10.9.8`).
-- `npm run dev` starts Vite on `127.0.0.1:1420`.
-- `npm run tauri dev` runs the desktop shell in development.
-- `npm run build` type-checks and builds all renderer entrypoints.
-- `npm test` runs Vitest unit/integration suites and Rust tests.
-- `npm run verify` is the required local gate: formatting, linting, types, capability checks, tests, and frontend/Rust builds.
-- `npm run build:windows` produces the Windows x64 NSIS package.
+WinUI (preferred on this branch):
+
+- `dotnet test winui/tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj`
+- `dotnet test winui/tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj`
+- `dotnet test winui/tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj`
+- Windows only: `dotnet build winui/MTGONotes.App/MTGONotes.App.csproj -r win-x64`
+
+Legacy Tauri:
+
+- `npm ci` then `npm run verify`
+- `npm run build:windows` for the NSIS package
 
 ## Coding Style & Naming Conventions
 
-Use strict TypeScript, two-space indentation, double quotes, semicolons, and type-only imports where applicable. Prettier and ESLint are authoritative; Rust must pass `cargo fmt` and Clippy with warnings denied. Name React components and Rust types in `PascalCase`, functions/modules in `camelCase` or `snake_case` respectively, and constants in `SCREAMING_SNAKE_CASE`. Keep sensitive filesystem, network, OCR, updater, and storage authority in Rust; renderer code should use typed IPC contracts.
+C# uses file-scoped namespaces, nullable enabled, and warnings as errors.
+React/TypeScript in the frozen tree still uses two-space indentation, double
+quotes, and semicolons. Sensitive storage, MTGO attach, and portability stay
+out of the XAML views. Overlay and capture talk only to session facades.
 
 ## Testing Guidelines
 
-Name frontend tests `*.test.ts` or `*.test.tsx` in the matching suite directory. Place cross-boundary Rust contracts in `src-tauri/tests/`; colocate focused Rust unit tests with their module. There is no numeric coverage threshold, so every behavior change needs a regression test. Run targeted suites while iterating, then `npm run verify`. Windows UIA/OCR, DPAPI/SQLCipher, accessibility, signing, and installer claims require the evidence described in `tests/release/`; macOS results do not substitute for it.
+Portable tests are required before claiming Core/Data/Live behavior. Windows
+UIA/OCR, DPAPI, overlay focus, live attach, and installer claims need the
+checklists under `winui/tests/release/` and `tests/release/`. macOS results do
+not substitute for packaged-Windows proof.
 
 ## Commit & Pull Request Guidelines
 
-Follow the repository's Conventional Commit style: `feat:`, `fix:`, `test:`, `ci:`, or `chore:` plus an imperative summary. Keep commits narrow. Pull requests should explain behavior and security-boundary changes, link the relevant issue or task, list verification commands, and include screenshots for visible UI changes. Call out any missing Windows manual evidence explicitly; never present portable checks as packaged-Windows proof.
+Conventional Commits: `feat:`, `fix:`, `test:`, `ci:`, or `chore:` plus an
+imperative summary. Call out missing Windows manual evidence explicitly.

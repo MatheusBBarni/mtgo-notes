@@ -31,4 +31,7 @@ dotnet build winui/MTGONotes.App/MTGONotes.App.csproj -c Debug
 
 The app is unpackaged (`WindowsPackageType=None`). Install the Windows App SDK runtime if the bootstrapper asks.
 
+Shell: tray, Ctrl+Shift+N capture, close-to-tray, single-instance, optional autostart.
+History search is blocked in-game. Official deck lookup only opens `https://www.mtgo.com` after consent.
+
 Live MTGOSDK attach is not wired in this first slice. Overlay HWND click-through is.
