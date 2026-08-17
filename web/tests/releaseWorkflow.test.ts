@@ -33,6 +33,8 @@ describe("release publish wiring", () => {
     expect(workflow).toContain("releases/windows/latest.json");
     expect(workflow).toContain("releases/windows/MTGONotes-");
     expect(workflow).toContain("wrangler r2 object put");
+    expect(workflow).toContain("--remote");
+    expect(workflow).not.toMatch(/<<EOF/);
     expect(workflow).not.toMatch(/continue-on-error:\s*true/);
   });
 

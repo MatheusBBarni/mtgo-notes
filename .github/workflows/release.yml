@@ -111,14 +111,7 @@ jobs:
           versioned="releases/windows/MTGONotes-${version}-win-x64.zip"
           uploaded_at="$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")"
           sha256="${{ steps.hash.outputs.sha256 }}"
-          cat > latest.json <<EOF
-          {
-            "version": "${version}",
-            "filename": "${zip}",
-            "sha256": "${sha256}",
-            "uploadedAt": "${uploaded_at}"
-          }
-          EOF
-          npx --yes wrangler r2 object put "mtgo-notes-releases/${versioned}" --file "$zip"
-          npx --yes wrangler r2 object put "mtgo-notes-releases/releases/windows/latest.zip" --file "$zip"
-          npx --yes wrangler r2 object put "mtgo-notes-releases/releases/windows/latest.json" --file latest.json
+          printf '%s\n' "{\"version\":\"${version}\",\"filename\":\"${zip}\",\"sha256\":\"${sha256}\",\"uploadedAt\":\"${uploaded_at}\"}" > latest.json
+          npx --yes wrangler r2 object put "mtgo-notes-releases/${versioned}" --file "$zip" --remote
+          npx --yes wrangler r2 object put "mtgo-notes-releases/releases/windows/latest.zip" --file "$zip" --remote
+          npx --yes wrangler r2 object put "mtgo-notes-releases/releases/windows/latest.json" --file latest.json --remote
