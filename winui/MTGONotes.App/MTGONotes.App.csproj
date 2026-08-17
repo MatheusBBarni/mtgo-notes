@@ -17,9 +17,11 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="MTGOSDK" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MTGONotes.Core\MTGONotes.Core.csproj" />
     <ProjectReference Include="..\MTGONotes.Data\MTGONotes.Data.csproj" />
+    <ProjectReference Include="..\MTGONotes.Live\MTGONotes.Live.csproj" />
   </ItemGroup>
 </Project>

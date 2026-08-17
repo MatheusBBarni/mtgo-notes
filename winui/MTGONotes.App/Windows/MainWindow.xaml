@@ -16,6 +16,7 @@
             Text="MTGO Opponent Notes" />
         <StackPanel Grid.Row="1" Margin="0,16,0,12" Spacing="8">
             <TextBlock x:Name="PhaseText" Foreground="{StaticResource MutedBrush}" />
+            <TextBlock x:Name="LiveText" Foreground="{StaticResource MutedBrush}" />
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBox
                     x:Name="HandleBox"
@@ -23,6 +24,7 @@
                     PlaceholderText="Opponent handle" />
                 <Button x:Name="ConfirmButton" Click="OnConfirmClick" Content="Confirm opponent" />
                 <Button x:Name="FinishButton" Click="OnFinishClick" Content="Finish encounter" />
+                <Button x:Name="PauseLiveButton" Click="OnPauseLiveClick" Content="Pause live attach" />
             </StackPanel>
             <TextBlock
                 x:Name="StatusText"

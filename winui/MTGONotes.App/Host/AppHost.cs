@@ -1,8 +1,10 @@
 using Microsoft.UI.Xaml;
+using MTGONotes.App.Live;
 using MTGONotes.App.Native;
 using MTGONotes.App.Windows;
 using MTGONotes.Core.Session;
 using MTGONotes.Data;
+using MTGONotes.Live;
 
 namespace MTGONotes.App.Host;
 
@@ -12,12 +14,16 @@ public sealed class AppHost
     private OverlayWindow? _overlay;
     private CaptureWindow? _capture;
     private HotkeyService? _hotkey;
+    private CancellationTokenSource? _liveRun;
 
     public CompanionSession Session { get; }
+
+    public LiveAttachSource Live { get; }
 
     public AppHost()
     {
         Session = CreateSession();
+        Live = new LiveAttachSource(new SdkMtgoClient());
     }
 
     private static CompanionSession CreateSession()
@@ -40,6 +46,12 @@ public sealed class AppHost
             _main?.DispatcherQueue.TryEnqueue(() => _main.Bind(view));
             _overlay?.DispatcherQueue.TryEnqueue(() => _overlay.Bind(view));
         };
+        Live.SnapshotChanged += (_, snapshot) =>
+        {
+            Session.ApplySnapshot(snapshot);
+            _main?.DispatcherQueue.TryEnqueue(() => _main.Bind(Session.CurrentView));
+            _overlay?.DispatcherQueue.TryEnqueue(() => _overlay.Bind(Session.CurrentView));
+        };
 
         _main = new MainWindow(this);
         _overlay = new OverlayWindow(this);
@@ -49,11 +61,15 @@ public sealed class AppHost
 
         _main.Closed += (_, _) =>
         {
+            _liveRun?.Cancel();
+            Live.Dispose();
             _hotkey?.Dispose();
             _overlay?.Close();
             _capture?.Close();
         };
 
+        _liveRun = new CancellationTokenSource();
+        _ = Live.StartAsync(_liveRun.Token);
         _main.Activate();
         _overlay.ShowPassive();
     }

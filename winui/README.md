@@ -16,6 +16,7 @@ Portable tests:
 ```bash
 dotnet test winui/tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj
 dotnet test winui/tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj
+dotnet test winui/tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj
 ```
 
 Data tests open a real SQLCipher database with a scoped test protector (not DPAPI).

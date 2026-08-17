@@ -2,8 +2,10 @@
   <Folder Name="/tests/">
     <Project Path="tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj" />
     <Project Path="tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj" />
+    <Project Path="tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj" />
   </Folder>
   <Project Path="MTGONotes.App/MTGONotes.App.csproj" />
   <Project Path="MTGONotes.Core/MTGONotes.Core.csproj" />
   <Project Path="MTGONotes.Data/MTGONotes.Data.csproj" />
+  <Project Path="MTGONotes.Live/MTGONotes.Live.csproj" />
 </Solution>
