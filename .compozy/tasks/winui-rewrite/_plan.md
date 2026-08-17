@@ -2,7 +2,7 @@
 
 Branch: `feat/winui-rewrite`
 Date: 2026-08-17
-Status: in progress — Phases 1–8 implemented in `winui/`. Phase 9 cutover keeps the Tauri tree until a Windows install opens a real notebook.
+Status: in progress — WinUI host is the repository root. The Tauri tree lives in `__oldversion__/`.
 
 This is the execution plan for replacing the Tauri 2 / React / Rust host with an unpackaged WinUI 3 / .NET 10 app that attaches to MTGO through MTGOSDK and keeps the existing opponent-notes product.
 

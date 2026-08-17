@@ -1,4 +1,4 @@
-name: WinUI rewrite
+name: WinUI
 
 on:
   pull_request:
@@ -22,12 +22,12 @@ jobs:
           dotnet-version: "10.0.x"
       - name: Test portable projects
         run: |
-          dotnet test winui/tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj --nologo
-          dotnet test winui/tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj --nologo
-          dotnet test winui/tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj --nologo
 
   windows:
-    name: Windows App restore
+    name: Windows App build
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
@@ -37,8 +37,8 @@ jobs:
           dotnet-version: "10.0.x"
       - name: Restore and test
         run: |
-          dotnet test winui/tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj --nologo
-          dotnet test winui/tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj --nologo
-          dotnet test winui/tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj --nologo
       - name: Build unpackaged app
-        run: dotnet build winui/MTGONotes.App/MTGONotes.App.csproj -c Release -r win-x64 --nologo
+        run: dotnet build MTGONotes.App/MTGONotes.App.csproj -c Release -r win-x64 --nologo
