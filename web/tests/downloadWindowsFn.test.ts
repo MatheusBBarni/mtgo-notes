@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { onRequestGet } from "../functions/download/windows";
+import { onRequest, onRequestGet } from "../functions/download/windows";
 import { fakeJson, fakeObject, fakeR2 } from "./helpers/fakeR2";
 
 describe("GET /download/windows", () => {
@@ -37,5 +37,50 @@ describe("GET /download/windows", () => {
     );
     expect(response.headers.get("Cache-Control")).toBe("private, no-store");
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(zipBytes);
+  });
+
+  it("streams the zip with a generic filename when latest.json is missing", async () => {
+    const zipBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
+    const response = await onRequestGet({
+      request: new Request("https://mtgo-notes.pages.dev/download/windows"),
+      env: {
+        RELEASES: fakeR2({
+          "releases/windows/latest.zip": fakeObject(zipBytes),
+        }),
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Disposition")).toContain(
+      "MTGONotes-win-x64.zip",
+    );
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(zipBytes);
+  });
+
+  it("redirects to the empty-state page when R2 throws", async () => {
+    const response = await onRequestGet({
+      request: new Request("https://mtgo-notes.pages.dev/download/windows"),
+      env: {
+        RELEASES: {
+          async get() {
+            throw new Error("r2 unavailable");
+          },
+        },
+      },
+    });
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("Location")).toBe("/download?available=0");
+  });
+
+  it("rejects non-GET methods", async () => {
+    const response = await onRequest({
+      request: new Request("https://mtgo-notes.pages.dev/download/windows", {
+        method: "POST",
+      }),
+      env: { RELEASES: fakeR2() },
+    });
+
+    expect(response.status).toBe(405);
   });
 });
