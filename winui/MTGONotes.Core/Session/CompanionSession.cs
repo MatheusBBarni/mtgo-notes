@@ -4,6 +4,7 @@ using MTGONotes.Core.Encounters;
 using MTGONotes.Core.Facades;
 using MTGONotes.Core.Identity;
 using MTGONotes.Core.Live;
+using MTGONotes.Core.Notebook;
 
 namespace MTGONotes.Core.Session;
 
@@ -11,8 +12,14 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
 {
     private readonly EncounterReducer _reducer = new();
     private readonly DisclosurePolicy _disclosure = new();
+    private readonly INotebookStore? _store;
     private readonly List<ObservationView> _currentNotes = [];
     private readonly object _gate = new();
+
+    public CompanionSession(INotebookStore? store = null)
+    {
+        _store = store;
+    }
     private EncounterRuntime _runtime = EncounterRuntime.Idle("unattached");
     private bool _paused;
     private bool _captureOpen;
@@ -24,6 +31,17 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
     public OverlayView CurrentView { get; private set; } = DisclosurePolicy.Neutral;
 
     public OpponentCandidate? Candidate { get; private set; }
+
+    public EntityId? ActiveEncounterId
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _runtime.Active?.Id;
+            }
+        }
+    }
 
     public bool DetectionPaused
     {
@@ -126,6 +144,21 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
             _runtime = EncounterRuntime.Idle(session);
         }
 
+        var profileId = EntityId.New();
+        if (_store is not null)
+        {
+            var existing = _store.FindProfileByNormalizedHandle(normalized.Value!.Key);
+            if (!existing.IsSuccess)
+            {
+                return Result.Fail(existing.Error!.Value);
+            }
+
+            if (existing.Value is { } found)
+            {
+                profileId = found;
+            }
+        }
+
         var result = _reducer.Reduce(
             _runtime,
             new ContextEvidence(
@@ -133,18 +166,33 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
                 Math.Max(_runtime.Generation + 1, candidate.Generation),
                 Math.Max(1, candidate.Sequence),
                 0,
-                EvidenceSource.Mtgosdk,
-                new EvidenceKind.ConfirmedOpponent(EntityId.New(), EntityId.New())));
+                session == "manual" ? EvidenceSource.Manual : EvidenceSource.Mtgosdk,
+                new EvidenceKind.ConfirmedOpponent(profileId, EntityId.New())));
         if (!result.IsSuccess)
         {
             return Result.Fail(result.Error!.Value);
         }
 
+        var persisted = Persist(
+            result.Value!.Actions,
+            session,
+            normalized.Value!.Display,
+            normalized.Value.Key,
+            result.Value.Runtime.Generation);
+        if (!persisted.IsSuccess)
+        {
+            return persisted;
+        }
+
         ApplyReduction(result);
-        _confirmedDisplay = normalized.Value!.Display;
+        _confirmedDisplay = normalized.Value.Display;
         _confirmedKey = normalized.Value.Key;
         Candidate = null;
-        _currentNotes.Clear();
+        if (result.Value.Actions.OfType<EncounterAction.StartEncounter>().Any())
+        {
+            _currentNotes.Clear();
+        }
+
         Publish();
         return Result.Ok();
     }
@@ -165,6 +213,17 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
             if (!result.IsSuccess)
             {
                 return Result.Fail(result.Error!.Value);
+            }
+
+            var persisted = Persist(
+                result.Value!.Actions,
+                _runtime.ProviderSession,
+                null,
+                null,
+                result.Value.Runtime.Generation);
+            if (!persisted.IsSuccess)
+            {
+                return persisted;
             }
 
             ApplyReduction(result);
@@ -208,6 +267,17 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
             if (!result.IsSuccess)
             {
                 return Result.Fail(result.Error!.Value);
+            }
+
+            var persisted = Persist(
+                result.Value!.Actions,
+                _runtime.ProviderSession,
+                null,
+                null,
+                result.Value.Runtime.Generation);
+            if (!persisted.IsSuccess)
+            {
+                return persisted;
             }
 
             ApplyReduction(result);
@@ -260,7 +330,22 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
                 return Result.Fail(RepoError.BlankObservation);
             }
 
-            _currentNotes.Insert(0, new ObservationView(EntityId.New().AsString(), text.Trim(), false));
+            var observationId = EntityId.New();
+            var trimmed = text.Trim();
+            if (_store is not null)
+            {
+                var saved = _store.SaveObservation(
+                    observationId,
+                    _runtime.Active.Id,
+                    trimmed,
+                    UtcMillis.Now());
+                if (!saved.IsSuccess)
+                {
+                    return saved;
+                }
+            }
+
+            _currentNotes.Insert(0, new ObservationView(observationId.AsString(), trimmed, false));
             _captureOpen = false;
             Publish();
             return Result.Ok();
@@ -277,6 +362,64 @@ public sealed class CompanionSession : IOverlayFacade, ICaptureFacade, INotebook
     }
 
     public Result AuthorizeHistory() => _disclosure.Authorize(QueryKind.SearchHistory, CurrentView.Phase);
+
+    private Result Persist(
+        IReadOnlyList<EncounterAction> actions,
+        string source,
+        string? displayHandle,
+        string? normalizedHandle,
+        ulong generation)
+    {
+        if (_store is null)
+        {
+            return Result.Ok();
+        }
+
+        var now = UtcMillis.Now();
+        foreach (var action in actions)
+        {
+            var persisted = action switch
+            {
+                EncounterAction.ResolveProfile resolve when displayHandle is not null && normalizedHandle is not null =>
+                    PersistProfile(resolve.ProfileId, displayHandle, normalizedHandle, now),
+                EncounterAction.StartEncounter start => _store.StartEncounter(
+                    start.EncounterId,
+                    start.ProfileId,
+                    now,
+                    generation,
+                    source is "uia" or "ocr" or "mtgosdk" ? source : "manual"),
+                EncounterAction.FinishEncounter finish => _store.FinishEncounter(finish.EncounterId, now),
+                EncounterAction.ChangePhase change => _store.ChangePhase(change.EncounterId, change.To),
+                EncounterAction.MarkIncomplete incomplete => _store.MarkIncomplete(
+                    incomplete.EncounterId,
+                    "completion_ignored"),
+                _ => Result.Ok(),
+            };
+            if (!persisted.IsSuccess)
+            {
+                return persisted;
+            }
+        }
+
+        return Result.Ok();
+    }
+
+    private Result PersistProfile(
+        EntityId profileId,
+        string displayHandle,
+        string normalizedHandle,
+        UtcMillis createdAt)
+    {
+        var existing = _store!.FindProfileByNormalizedHandle(normalizedHandle);
+        if (!existing.IsSuccess)
+        {
+            return Result.Fail(existing.Error!.Value);
+        }
+
+        return existing.Value is null
+            ? _store.CreateProfile(profileId, displayHandle, normalizedHandle, createdAt)
+            : Result.Ok();
+    }
 
     private void ApplyReduction(Result<Reduction> result)
     {

@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using MTGONotes.App.Native;
 using MTGONotes.App.Windows;
 using MTGONotes.Core.Session;
+using MTGONotes.Data;
 
 namespace MTGONotes.App.Host;
 
@@ -12,7 +13,25 @@ public sealed class AppHost
     private CaptureWindow? _capture;
     private HotkeyService? _hotkey;
 
-    public CompanionSession Session { get; } = new();
+    public CompanionSession Session { get; }
+
+    public AppHost()
+    {
+        Session = CreateSession();
+    }
+
+    private static CompanionSession CreateSession()
+    {
+        var root = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "MTGONotes");
+        Directory.CreateDirectory(root);
+        var opened = NotebookBootstrap.Initialize(
+            Path.Combine(root, "notebook.db"),
+            Path.Combine(root, "notebook.key"),
+            new CurrentUserDpapi());
+        return opened.IsSuccess ? new CompanionSession(opened.Value) : new CompanionSession();
+    }
 
     public void Start()
     {

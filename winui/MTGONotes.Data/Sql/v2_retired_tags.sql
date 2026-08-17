@@ -1,0 +1,1 @@
+ALTER TABLE tendency_tags ADD COLUMN retired_at INTEGER;

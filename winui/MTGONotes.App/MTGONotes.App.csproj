@@ -20,5 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MTGONotes.Core\MTGONotes.Core.csproj" />
+    <ProjectReference Include="..\MTGONotes.Data\MTGONotes.Data.csproj" />
   </ItemGroup>
 </Project>

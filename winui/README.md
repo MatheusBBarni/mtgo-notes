@@ -11,7 +11,14 @@ export PATH="$HOME/.dotnet:$PATH"
 dotnet test winui/tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj
 ```
 
-Core currently has 46 tests: reducer, disclosure, identity, phase mapping, and the in-memory companion session.
+Portable tests:
+
+```bash
+dotnet test winui/tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj
+dotnet test winui/tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj
+```
+
+Data tests open a real SQLCipher database with a scoped test protector (not DPAPI).
 
 ## On Windows
 
