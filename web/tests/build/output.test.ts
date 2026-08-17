@@ -42,6 +42,7 @@ describe("brochure build output", () => {
       expect(document).toContain('href="/live-attach"');
       expect(document).toContain('href="/privacy"');
       expect(document).toMatch(/not affiliated/i);
+      expect(document).toContain("Source on ");
       expect(document).toContain("/favicon.ico");
       expect(document).toContain("/brand/icon.png");
     }

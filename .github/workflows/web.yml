@@ -5,10 +5,12 @@ on:
     paths:
       - "web/**"
       - ".github/workflows/web.yml"
+      - ".github/workflows/release.yml"
   pull_request:
     paths:
       - "web/**"
       - ".github/workflows/web.yml"
+      - ".github/workflows/release.yml"
 
 jobs:
   test:

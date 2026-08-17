@@ -11,7 +11,10 @@ const fallbackFilename = "MTGONotes-win-x64.zip";
 function emptyStateRedirect(): Response {
   return new Response(null, {
     status: 302,
-    headers: { Location: "/download?available=0" },
+    headers: {
+      Location: "/download?available=0",
+      "Cache-Control": "private, no-store",
+    },
   });
 }
 

@@ -11,6 +11,7 @@ describe("GET /download/windows", () => {
 
     expect(response.status).toBe(302);
     expect(response.headers.get("Location")).toBe("/download?available=0");
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
   });
 
   it("streams the latest zip with the meta filename and no-store cache", async () => {
@@ -71,6 +72,7 @@ describe("GET /download/windows", () => {
 
     expect(response.status).toBe(302);
     expect(response.headers.get("Location")).toBe("/download?available=0");
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
   });
 
   it("rejects non-GET methods", async () => {

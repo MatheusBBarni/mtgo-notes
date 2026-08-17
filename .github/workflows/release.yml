@@ -90,6 +90,15 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Hash zip for latest.json
+        if: github.ref_type == 'tag'
+        id: hash
+        shell: pwsh
+        run: |
+          $zip = "MTGONotes-${{ steps.version.outputs.version }}-win-x64.zip"
+          $sha256 = (Get-FileHash -Algorithm SHA256 $zip).Hash.ToLower()
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "sha256=$sha256"
+
       - name: Publish zip to R2
         if: github.ref_type == 'tag'
         env:
@@ -101,7 +110,7 @@ jobs:
           zip="MTGONotes-${version}-win-x64.zip"
           versioned="releases/windows/MTGONotes-${version}-win-x64.zip"
           uploaded_at="$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")"
-          sha256="$(sha256sum "$zip" | awk '{print $1}')"
+          sha256="${{ steps.hash.outputs.sha256 }}"
           cat > latest.json <<EOF
           {
             "version": "${version}",
