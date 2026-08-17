@@ -43,6 +43,17 @@ describe("brochure build output", () => {
     }
   });
 
+  it("renders the Home first screen", () => {
+    const home = html("index.html");
+    expect(home).toMatch(/private, local-first/i);
+    expect(home).toContain("confirm opponent");
+    expect(home).toContain("fast capture");
+    expect(home).toContain("recall between games");
+    expect(home).toMatch(/board logger/i);
+    expect(home).toContain('href="/download/windows"');
+    expect(home).toContain("Download for Windows");
+  });
+
   it("ships the brand files and no zip", () => {
     expect(existsSync(join(dist, "favicon.ico"))).toBe(true);
     expect(existsSync(join(dist, "brand/icon.png"))).toBe(true);
