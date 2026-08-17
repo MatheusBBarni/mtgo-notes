@@ -1,74 +1,55 @@
 import { ReleaseKeys } from "../../src/lib/releaseKeys";
-
-interface R2GetResult {
-  json(): Promise<unknown>;
-}
-
-interface ReleaseEnv {
-  RELEASES: {
-    get(key: string): Promise<R2GetResult | null>;
-  };
-}
-
-
+import {
+  parseLatestMeta,
+  rejectNonGet,
+  type PagesEnv,
+  type ReleaseObject,
+  type ReleaseStatus,
+} from "../../src/lib/releases";
 
 export async function onRequest(context: {
   request: Request;
-  env: ReleaseEnv;
+  env: PagesEnv;
 }): Promise<Response> {
-  if (context.request.method !== "GET") {
-    return new Response(null, { status: 405 });
-  }
-  return onRequestGet(context);
+  return rejectNonGet(context.request.method) ?? onRequestGet(context);
 }
 
 export async function onRequestGet(context: {
-  env: ReleaseEnv;
+  env: PagesEnv;
 }): Promise<Response> {
-  let zip: R2GetResult | null;
+  let zip: ReleaseObject | null;
   try {
     zip = await context.env.RELEASES.get(ReleaseKeys.latestZip);
   } catch {
-    return Response.json({ available: false });
+    return jsonStatus({ available: false });
   }
 
   if (zip === null) {
-    return Response.json({ available: false });
+    return jsonStatus({ available: false });
   }
 
   try {
     const meta = await context.env.RELEASES.get(ReleaseKeys.latestMeta);
     if (meta === null) {
-      return Response.json({ available: true });
+      return jsonStatus({ available: true });
     }
 
-    const parsed = await meta.json();
-    if (!isLatestMeta(parsed)) {
-      return Response.json({ available: true });
+    const parsed = parseLatestMeta(await meta.json());
+    if (!parsed) {
+      return jsonStatus({ available: true });
     }
 
-    return Response.json({
+    return jsonStatus({
       available: true,
       version: parsed.version,
       filename: parsed.filename,
       uploadedAt: parsed.uploadedAt,
     });
   } catch {
-    return Response.json({ available: true });
+    return jsonStatus({ available: true });
   }
 }
 
-function isLatestMeta(
-  value: unknown,
-): value is { version: string; filename: string; uploadedAt: string } {
-  return (
-    !!value &&
-    typeof value === "object" &&
-    "version" in value &&
-    "filename" in value &&
-    "uploadedAt" in value &&
-    typeof value.version === "string" &&
-    typeof value.filename === "string" &&
-    typeof value.uploadedAt === "string"
-  );
+function jsonStatus(status: ReleaseStatus): Response {
+  return Response.json(status);
 }

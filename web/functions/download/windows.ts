@@ -1,15 +1,10 @@
 import { ReleaseKeys } from "../../src/lib/releaseKeys";
-
-interface R2GetResult {
-  body: ReadableStream<Uint8Array> | null;
-  json(): Promise<unknown>;
-}
-
-interface ReleaseEnv {
-  RELEASES: {
-    get(key: string): Promise<R2GetResult | null>;
-  };
-}
+import {
+  parseLatestMeta,
+  rejectNonGet,
+  type PagesEnv,
+  type ReleaseObject,
+} from "../../src/lib/releases";
 
 const fallbackFilename = "MTGONotes-win-x64.zip";
 
@@ -22,18 +17,15 @@ function emptyStateRedirect(): Response {
 
 export async function onRequest(context: {
   request: Request;
-  env: ReleaseEnv;
+  env: PagesEnv;
 }): Promise<Response> {
-  if (context.request.method !== "GET") {
-    return new Response(null, { status: 405 });
-  }
-  return onRequestGet(context);
+  return rejectNonGet(context.request.method) ?? onRequestGet(context);
 }
 
 export async function onRequestGet(context: {
-  env: ReleaseEnv;
+  env: PagesEnv;
 }): Promise<Response> {
-  let zip: R2GetResult | null;
+  let zip: ReleaseObject | null;
   try {
     zip = await context.env.RELEASES.get(ReleaseKeys.latestZip);
   } catch {
@@ -44,39 +36,24 @@ export async function onRequestGet(context: {
     return emptyStateRedirect();
   }
 
-  const filename = await readFilename(context.env.RELEASES);
-  return new Response(zip.body, {
+  return new Response(zip.body ?? null, {
     status: 200,
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": `attachment; filename="${await readFilename(context.env.RELEASES)}"`,
       "Cache-Control": "private, no-store",
     },
   });
 }
 
-async function readFilename(
-  releases: ReleaseEnv["RELEASES"],
-): Promise<string> {
+async function readFilename(releases: PagesEnv["RELEASES"]): Promise<string> {
   try {
     const meta = await releases.get(ReleaseKeys.latestMeta);
     if (meta === null) {
       return fallbackFilename;
     }
-
-    const parsed = await meta.json();
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      "filename" in parsed &&
-      typeof parsed.filename === "string" &&
-      parsed.filename.length > 0
-    ) {
-      return parsed.filename;
-    }
+    return parseLatestMeta(await meta.json())?.filename ?? fallbackFilename;
   } catch {
     return fallbackFilename;
   }
-
-  return fallbackFilename;
 }
