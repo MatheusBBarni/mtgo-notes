@@ -1,0 +1,245 @@
+# Reviewed source definition. Not loaded directly by the runtime classifier.
+# Source: https://mtgdecks.net/Standard
+# Window: Last 60 days
+# Site last updated: 2026-08-03 18:00:29
+# Captured with Computer Use and the in-app review browser.
+# The generic Rogue bucket (5.49%) is intentionally excluded.
+# Sultai Reanimator (0.84%) remains unresolved because MTGDecks rate-limited
+# both candidate deck-detail pages before their main-deck cards could be verified.
+
+format: Standard
+date: "2026-08-03"
+archetypes:
+  # MTGDecks share: 16.49%
+  # Source: https://mtgdecks.net/Standard/izzet-prowess
+  # Reviewed deck 1: https://mtgdecks.net/Standard/izzet-prowess-decklist-by-dat1gaymer-2954927
+  # Reviewed deck 2: https://mtgdecks.net/Standard/deck-decklist-by-theduck-3044177
+  - name: Izzet Prowess
+    signatureCards:
+      - name: Slickshot Show-Off
+        minCopies: 4
+      - name: Flow State
+        minCopies: 4
+      - name: Colorstorm Stallion
+        minCopies: 2
+
+  # MTGDecks share: 12.60%
+  # Source: https://mtgdecks.net/Standard/selesnya-gearhulk
+  # Reviewed deck 1: https://mtgdecks.net/Standard/selesnya-midrange-decklist-by-yoshida-keita-3042970
+  # Reviewed deck 2: https://mtgdecks.net/Standard/selesnya-midrange-decklist-by-%E3%82%B3%E3%82%AF%E3%83%96%E3%83%B3-%E3%82%BF%E3%82%B1%E3%82%B7-3042973
+  - name: Selesnya Gearhulk
+    signatureCards:
+      - name: Brightglass Gearhulk
+        minCopies: 4
+      - name: Leatherhead, Swamp Stalker
+        minCopies: 4
+      - name: Pawpatch Recruit
+        minCopies: 4
+
+  # MTGDecks share: 12.50%
+  # Source: https://mtgdecks.net/Standard/jeskai-lessons
+  # Reviewed deck 1: https://mtgdecks.net/Standard/jeskai-lessons-decklist-by-mochizuki-kota-3043152
+  # Reviewed deck 2: https://mtgdecks.net/Standard/jeskai-lessons-decklist-by-takada-koki-3043157
+  - name: Jeskai Lessons
+    signatureCards:
+      - name: Jeskai Revelation
+        minCopies: 4
+      - name: Tablet of Discovery
+        minCopies: 4
+      - name: Firebending Lesson
+        minCopies: 4
+
+  # MTGDecks share: 7.90%
+  # Source: https://mtgdecks.net/Standard/izzet-spellementals
+  # Reviewed deck 1: https://mtgdecks.net/Standard/izzet-spellementals-decklist-by-jjapps-3043797
+  # Reviewed deck 2: https://mtgdecks.net/Standard/izzet-decklist-by-dilroy-3043805
+  - name: Izzet Spellementals
+    signatureCards:
+      - name: Eddymurk Crab
+        minCopies: 4
+      - name: Hearth Elemental
+        minCopies: 4
+      - name: Prismari Charm
+        minCopies: 4
+
+  # MTGDecks share: 5.79%
+  # Source: https://mtgdecks.net/Standard/dimir-excruciator
+  # Reviewed deck 1: https://mtgdecks.net/Standard/deck-decklist-by-vitorcarvalho01-3044073
+  # Reviewed deck 2: https://mtgdecks.net/Standard/deck-decklist-by-tchuco-3044062
+  - name: Dimir Excruciator
+    signatureCards:
+      - name: Doomsday Excruciator
+        minCopies: 3
+      - name: Deceit
+        minCopies: 4
+      - name: Kavaero, Mind-Bitten
+        minCopies: 4
+
+  # MTGDecks share: 5.67%
+  # Source: https://mtgdecks.net/Standard/4-color-control
+  # Reviewed deck 1: https://mtgdecks.net/Standard/4c-control-decklist-by-flesheatingnome-3042904
+  # Reviewed deck 2: https://mtgdecks.net/Standard/w-u-b-r-control-decklist-by-flesheatingnome-3043788
+  - name: 4 Color Control
+    signatureCards:
+      - name: Deadly Cover-Up
+        minCopies: 2
+      - name: Inevitable Defeat
+        minCopies: 2
+      - name: Together as One
+        minCopies: 2
+
+  # MTGDecks share: 4.73%
+  # Source: https://mtgdecks.net/Standard/mono-green-landfall
+  # Reviewed deck 1: https://mtgdecks.net/Standard/deck-decklist-by-jessy-samek-3044054
+  # Reviewed deck 2: https://mtgdecks.net/Standard/deck-decklist-by-jackie42005-3044070
+  - name: Mono Green Landfall
+    signatureCards:
+      - name: Icetill Explorer
+        minCopies: 4
+      - name: Earthbender Ascension
+        minCopies: 4
+      - name: Sazh's Chocobo
+        minCopies: 4
+
+  # MTGDecks share: 1.70%
+  # Source: https://mtgdecks.net/Standard/mardu-discard
+  # Reviewed deck 1: https://mtgdecks.net/Standard/deck-decklist-by-yoshi-3044176
+  # Reviewed deck 2: https://mtgdecks.net/Standard/deck-decklist-by-yoshi-3040922
+  - name: Mardu Discard
+    signatureCards:
+      - name: Bloodghast
+        minCopies: 4
+      - name: Cool but Rude
+        minCopies: 4
+      - name: Marauding Mako
+        minCopies: 4
+
+  # MTGDecks share: 1.63%
+  # Source: https://mtgdecks.net/Standard/azorius-blink
+  # Reviewed deck 1: https://mtgdecks.net/Standard/azorius-momo-decklist-by-recknoc-2994328
+  # Reviewed deck 2: https://mtgdecks.net/Standard/azorius-aggro-decklist-by-kiyota-shohei-3027171
+  - name: Azorius Blink
+    signatureCards:
+      - name: Momo, Friendly Flier
+        minCopies: 4
+      - name: Daydream
+        minCopies: 4
+      - name: Starfield Shepherd
+        minCopies: 4
+
+  # MTGDecks share: 1.55%
+  # Source: https://mtgdecks.net/Standard/mono-red-aggro
+  # Reviewed deck 1: https://mtgdecks.net/Standard/mono-red-decklist-by-ch4rm2nd0r-3043794
+  # Reviewed deck 2: https://mtgdecks.net/Standard/deck-decklist-by-arkany1-3044065
+  - name: Mono-Red Aggro
+    signatureCards:
+      - name: Hired Claw
+        minCopies: 4
+      - name: Zhao, the Moon Slayer
+        minCopies: 3
+      - name: Sunspine Lynx
+        minCopies: 2
+
+  # MTGDecks share: 1.47%
+  # Source: https://mtgdecks.net/Standard/converge-control
+  # Reviewed deck 1: https://mtgdecks.net/Standard/converge-control-decklist-by-markmtg-2991474
+  # Reviewed deck 2: https://mtgdecks.net/Standard/converge-lvd-decklist-by-markmtg-3008763
+  - name: Converge Control
+    signatureCards:
+      - name: Ancient Cornucopia
+        minCopies: 4
+      - name: Together as One
+        minCopies: 4
+      - name: Ill-Timed Explosion
+        minCopies: 3
+
+  # MTGDecks share: 1.40%
+  # Source: https://mtgdecks.net/Standard/izzet-lessons
+  # Reviewed deck 1: https://mtgdecks.net/Standard/deck-decklist-by-yungdingo-3039656
+  # Reviewed deck 2: https://mtgdecks.net/Standard/deck-decklist-by-elioda-3038626
+  - name: Izzet Lessons
+    signatureCards:
+      - name: Gran-Gran
+        minCopies: 4
+      - name: Stormchaser's Talent
+        minCopies: 4
+      - name: Boomerang Basics
+        minCopies: 4
+
+  # MTGDecks share: 1.35%
+  # Source: https://mtgdecks.net/Standard/selesnya-landfall
+  # Reviewed deck 1: https://mtgdecks.net/Standard/deck-decklist-by-morris-3041901
+  # Reviewed deck 2: https://mtgdecks.net/Standard/selesnya-landfall-decklist-by-tyriel-3030355
+  - name: Selesnya Landfall
+    signatureCards:
+      - name: Earthbender Ascension
+        minCopies: 4
+      - name: Sazh's Chocobo
+        minCopies: 4
+      - name: Mightform Harmonizer
+        minCopies: 4
+
+  # MTGDecks share: 1.17%
+  # Source: https://mtgdecks.net/Standard/bant-gearhulk
+  # Reviewed deck 1: https://mtgdecks.net/Standard/deck-decklist-by-moreno13-3040027
+  # Reviewed deck 2: https://mtgdecks.net/Standard/bant-combo-decklist-by-robinvahland-3034990
+  - name: Bant Gearhulk
+    signatureCards:
+      - name: Brightglass Gearhulk
+        minCopies: 4
+      - name: Bloom Tender
+        minCopies: 4
+      - name: Sewer-veillance Cam
+        minCopies: 4
+
+  # MTGDecks share: 0.94%
+  # Source: https://mtgdecks.net/Standard/dimir-midrange
+  # Reviewed deck 1: https://mtgdecks.net/Standard/dimir-midrange-decklist-by-junichi-sakurai-3041505
+  # Reviewed deck 2: https://mtgdecks.net/Standard/deck-decklist-by-beicodegeia-3041365
+  - name: Dimir Midrange
+    signatureCards:
+      - name: Kaito, Bane of Nightmares
+        minCopies: 4
+      - name: Dream Beavers
+        minCopies: 4
+      - name: Floodpits Drowner
+        minCopies: 4
+
+  # MTGDecks share: 0.89%
+  # Source: https://mtgdecks.net/Standard/selesnya-counters
+  # Reviewed deck 1: https://mtgdecks.net/Standard/wurm-hunt-decklist-by-justsomedudenamedted-3012605
+  # Reviewed deck 2: https://mtgdecks.net/Standard/selesnya-offense-decklist-by-freddie-barber-3043800
+  - name: Selesnya Counters
+    signatureCards:
+      - name: Ouroboroid
+        minCopies: 4
+      - name: Practiced Offense
+        minCopies: 4
+      - name: Pawpatch Recruit
+        minCopies: 3
+
+  # MTGDecks share: 0.86%
+  # Source: https://mtgdecks.net/Standard/azorius-flash
+  # Reviewed deck 1: https://mtgdecks.net/Standard/uw-prison-msh-decklist-by-perfectman8-3040269
+  # Reviewed deck 2: https://mtgdecks.net/Standard/uw-prison-msh-decklist-by-perfectman8-3042905
+  - name: Azorius Flash
+    signatureCards:
+      - name: Aven Interrupter
+        minCopies: 4
+      - name: High Noon
+        minCopies: 3
+      - name: Skycoach Conductor
+        minCopies: 3
+
+  # MTGDecks share: 0.86%
+  # Source: https://mtgdecks.net/Standard/dimir-control
+  # Reviewed deck 1: https://mtgdecks.net/Standard/deck-decklist-by-7steamvents-3044069
+  # Reviewed deck 2: https://mtgdecks.net/Standard/deck-decklist-by-7steamvents-3041375
+  - name: Dimir Control
+    signatureCards:
+      - name: Vein Ripper
+        minCopies: 3
+      - name: Deceit
+        minCopies: 4
+      - name: Kavaero, Mind-Bitten
+        minCopies: 4

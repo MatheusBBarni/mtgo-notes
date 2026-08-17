@@ -1,17 +1,40 @@
 # MTGO Opponent Notes
 
-Private, local-first Windows companion scaffold built with Tauri 2, React 19,
-TypeScript, and Rust.
+Private, local-first Windows companion. The active host is an unpackaged
+WinUI 3 / .NET 10 app. The previous Tauri 2 tree is frozen in `__oldversion__/`.
 
-## Toolchains
+## Toolchain
 
-- Node.js `22.23.1` with npm `10.9.8`
-- Rust `1.95.0`
-- Windows target `x86_64-pc-windows-msvc`
+- .NET 10 SDK
+- Windows 10 22H2 / Windows 11 x64 for the app and MTGOSDK attach
+- Portable Core/Data/Live tests run on macOS and Linux
 
-Install frontend dependencies with `npm ci`. Run the complete local validation
-gate with `npm run verify`. Windows packaging uses `npm run build:windows`.
+```bash
+export PATH="$HOME/.dotnet:$PATH"
+dotnet test tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj
+dotnet test tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj
+dotnet test tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj
+```
 
-The three renderer entrypoints are capability-isolated. Sensitive storage,
-filesystem, process, shell, OCR, updater-installation, and network authority
-remain in the Rust host.
+On Windows, open `MTGONotes.slnx` and run `MTGONotes.App`. Log into MTGO first.
+Live attach is read-only and never calls `Client.LogOn`.
+
+## Layout
+
+- `MTGONotes.App` — unpackaged WinUI shell (overlay, capture, tray)
+- `MTGONotes.Core` — encounter reducer, disclosure, session
+- `MTGONotes.Data` — SQLCipher notebook
+- `MTGONotes.Live` — read-only MTGO attach abstractions
+- `tests/` — portable xUnit suites
+- `__oldversion__/` — frozen Tauri/React/Rust tree
+
+## Release
+
+Push a version tag or run **Release Windows app** from Actions:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+That publishes a draft-or-tagged GitHub Release with `MTGONotes-<version>-win-x64.zip`.

@@ -1,7 +1,15 @@
 name: Release Windows app
 
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version without the v prefix (used only when not tagging)"
+        required: false
+        default: "0.1.0"
 
 permissions:
   contents: write
@@ -12,42 +20,66 @@ concurrency:
 
 jobs:
   release:
-    name: Build Windows release
+    name: Build and publish WinUI Windows x64
     runs-on: windows-latest
-    timeout-minutes: 60
-
+    timeout-minutes: 45
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
-      - name: Use pinned Node.js
-        uses: actions/setup-node@v6
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
         with:
-          node-version-file: .nvmrc
-          cache: npm
+          dotnet-version: "10.0.x"
 
-      - name: Install pinned Rust toolchain
-        run: rustup show
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            raw="${GITHUB_REF_NAME}"
+            version="${raw#v}"
+            tag="${raw}"
+          else
+            version="${{ github.event.inputs.version }}"
+            tag="v${version}-draft.${GITHUB_SHA:0:7}"
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "name=MTGO Opponent Notes v${version}" >> "$GITHUB_OUTPUT"
 
-      - name: Cache Rust build outputs
-        uses: swatinem/rust-cache@v2
+      - name: Run portable tests
+        run: |
+          dotnet test tests/MTGONotes.Core.Tests/MTGONotes.Core.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj --nologo
+          dotnet test tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj --nologo
+
+      - name: Publish self-contained Windows x64 app
+        run: >
+          dotnet publish MTGONotes.App/MTGONotes.App.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:PublishSingleFile=false
+          -o publish/win-x64
+          --nologo
+
+      - name: Zip published app
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish/win-x64/* -DestinationPath "MTGONotes-${{ steps.version.outputs.version }}-win-x64.zip" -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          workspaces: ./src-tauri -> target
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.name }}
+          draft: ${{ github.ref_type != 'tag' }}
+          generate_release_notes: true
+          files: MTGONotes-${{ steps.version.outputs.version }}-win-x64.zip
+          body: |
+            Unpackaged WinUI 3 Windows x64 build.
 
-      - name: Install locked dependencies
-        run: npm ci
-
-      - name: Run portable release preflight
-        run: npm run verify:release
-
-      - name: Build installer and create draft GitHub Release
-        uses: tauri-apps/tauri-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: v__VERSION__
-          releaseName: MTGO Opponent Notes v__VERSION__
-          releaseBody: Download the Windows NSIS installer from the assets below.
-          releaseDraft: true
-          prerelease: false
-          args: --target x86_64-pc-windows-msvc --bundles nsis
+            Unzip and run `MTGONotes.App.exe`. Log into MTGO before launching if you want live attach.
+            This build does not log on to MTGO and does not write into the client.
