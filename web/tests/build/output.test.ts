@@ -54,6 +54,20 @@ describe("brochure build output", () => {
     expect(home).toContain("Download for Windows");
   });
 
+  it("renders Download requirements, empty state, and a first-party CTA", () => {
+    const page = html("download/index.html");
+    expect(page).toContain("Windows 10 22H2");
+    expect(page).toContain("Windows 11");
+    expect(page).toContain("MTGONotes.App.exe");
+    expect(page).toContain("A Windows build is not published yet.");
+    expect(page).toContain("GitHub Releases");
+    expect(page).not.toContain(
+      "github.com/MatheusBBarni/mtgo-notes/releases/download/",
+    );
+    expect(page).toContain('href="/download/windows"');
+    expect(page).toMatch(/<button[^>]*disabled[^>]*>Download for Windows<\/button>/);
+  });
+
   it("ships the brand files and no zip", () => {
     expect(existsSync(join(dist, "favicon.ico"))).toBe(true);
     expect(existsSync(join(dist, "brand/icon.png"))).toBe(true);
