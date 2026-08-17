@@ -1,5 +1,27 @@
 export const primaryDownloadHref = "/download/windows";
 
+export const copy = {
+  pitch:
+    "A private, local-first Windows companion that helps you remember MTGO opponents and review verifiable public context — without becoming an MTGO client.",
+  contrast:
+    "We store your observations. We do not log the board. This is not a board logger.",
+  downloadLabel: "Download for Windows",
+  beats: [
+    {
+      title: "confirm opponent",
+      body: "Match the nickname you see before anything is saved.",
+    },
+    {
+      title: "fast capture",
+      body: "Write a note in under five seconds between games.",
+    },
+    {
+      title: "recall between games",
+      body: "Read history when you are not playing, not during a match.",
+    },
+  ],
+} as const;
+
 const forbidden = [
   "tournament-safe",
   "ban-proof",

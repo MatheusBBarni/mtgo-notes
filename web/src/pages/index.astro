@@ -1,7 +1,24 @@
 ---
+import DownloadCta from "../components/DownloadCta.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { copy } from "../content/copy";
 ---
 
 <BaseLayout title="MTGO Opponent Notes">
-  <h1>MTGO Opponent Notes</h1>
+  <section class="hero">
+    <h1>MTGO Opponent Notes</h1>
+    <p class="pitch">{copy.pitch}</p>
+    <DownloadCta />
+    <p class="contrast">{copy.contrast}</p>
+    <ul class="beats">
+      {
+        copy.beats.map((beat) => (
+          <li>
+            <h2>{beat.title}</h2>
+            <p>{beat.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
 </BaseLayout>
