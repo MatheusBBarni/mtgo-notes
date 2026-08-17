@@ -1,0 +1,262 @@
+# Reviewed source definition. Not loaded directly by the runtime classifier.
+# Source: https://mtgdecks.net/Pauper
+# Window: Last 60 days
+# Site last updated: 2026-08-03 03:43:31
+# Captured with Computer Use.
+# The generic Rogue bucket (4.28%) is intentionally excluded.
+
+format: Pauper
+date: "2026-08-03"
+archetypes:
+  # MTGDecks share: 9.14%
+  # Source: https://mtgdecks.net/Pauper/mono-red-madness
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-kampo-3043753
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-mistertwin-3043766
+  - name: Mono Red Madness
+    signatureCards:
+      - name: Kessig Flamebreather
+        minCopies: 3
+      - name: Guttersnipe
+        minCopies: 3
+      - name: Fiery Temper
+        minCopies: 3
+
+  # MTGDecks share: 7.77%
+  # Source: https://mtgdecks.net/Pauper/grixis-affinity
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-s8shock-3043759
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/grixis-afinity-decklist-by-fjh-3043642
+  - name: Grixis Affinity
+    signatureCards:
+      - name: Myr Enforcer
+        minCopies: 3
+      - name: Thoughtcast
+        minCopies: 3
+      - name: Galvanic Blast
+        minCopies: 3
+
+  # MTGDecks share: 5.39%
+  # Source: https://mtgdecks.net/Pauper/mono-blue-terror
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-ridikolaus-3043775
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/mono-blue-terror-decklist-by-okauchi-yuuta-3043281
+  - name: Mono Blue Terror
+    signatureCards:
+      - name: Tolarian Terror
+        minCopies: 3
+      - name: Cryptic Serpent
+        minCopies: 3
+      - name: Delver of Secrets
+        minCopies: 3
+
+  # MTGDecks share: 5.04%
+  # Source: https://mtgdecks.net/Pauper/jund-wildfire
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/jund-wildfire-decklist-by-emanuele-ciuffarella-3043366
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/jund-wildfire-decklist-by-jancarvalho-3043860
+  - name: Jund Wildfire
+    signatureCards:
+      - name: Cleansing Wildfire
+        minCopies: 3
+      - name: Writhing Chrysalis
+        minCopies: 3
+      - name: Refurbished Familiar
+        minCopies: 3
+
+  # MTGDecks share: 4.62%
+  # Source: https://mtgdecks.net/Pauper/mono-red-rally
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/rally-decklist-by-jsimonetti-3043635
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-boom-bust-3043882
+  - name: Mono Red Rally
+    signatureCards:
+      - name: Rally at the Hornburg
+        minCopies: 3
+      - name: Goblin Bushwhacker
+        minCopies: 3
+      - name: Burning-Tree Emissary
+        minCopies: 3
+
+  # MTGDecks share: 3.84%
+  # Source: https://mtgdecks.net/Pauper/ub-faeries
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/ub-fadas-decklist-by-joao-sette-3043430
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-niederschatten-3043768
+  - name: UB Faeries
+    signatureCards:
+      - name: Spellstutter Sprite
+        minCopies: 3
+      - name: Thorn of the Black Rose
+        minCopies: 2
+      - name: Snuff Out
+        minCopies: 3
+
+  # MTGDecks share: 3.72%
+  # Source: https://mtgdecks.net/Pauper/elves
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-fabdi-3043758
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/mono-green-elves-decklist-by-lgsn-3043855
+  - name: Elves
+    signatureCards:
+      - name: Priest of Titania
+        minCopies: 3
+      - name: Timberwatch Elf
+        minCopies: 3
+      - name: Quirion Ranger
+        minCopies: 3
+
+  # MTGDecks share: 3.32%
+  # Source: https://mtgdecks.net/Pauper/golgari-gardens
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-nicknorman-3043877
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-hottaro-3042105
+  - name: Golgari Gardens
+    signatureCards:
+      - name: Khalni Garden
+        minCopies: 3
+      - name: Tithing Blade
+        minCopies: 2
+      - name: Fanatical Offering
+        minCopies: 3
+
+  # MTGDecks share: 3.29%
+  # Source: https://mtgdecks.net/Pauper/monster-tron
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-abcd-1234-3042122
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/monster-tron-decklist-by-nuno-peixoto-3041243
+  - name: Monster Tron
+    signatureCards:
+      - name: Urza's Mine
+        minCopies: 3
+      - name: Urza's Power Plant
+        minCopies: 3
+      - name: Urza's Tower
+        minCopies: 3
+      - name: Maelstrom Colossus
+        minCopies: 3
+
+  # MTGDecks share: 3.18%
+  # Source: https://mtgdecks.net/Pauper/naya-gates
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-tugganaxos-3043754
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-shika-3043769
+  - name: Naya Gates
+    signatureCards:
+      - name: Basilisk Gate
+        minCopies: 3
+      - name: Sacred Cat
+        minCopies: 3
+      - name: Outlaw Medic
+        minCopies: 3
+      - name: Writhing Chrysalis
+        minCopies: 3
+
+  # MTGDecks share: 3.18%
+  # Source: https://mtgdecks.net/Pauper/rakdos-madness
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/rakdos-madness-decklist-by-fernandop-3043638
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/rakdos-burn-decklist-by-overgrowntom-3042818
+  - name: Rakdos Madness
+    signatureCards:
+      - name: Kitchen Imp
+        minCopies: 3
+      - name: Vampire's Kiss
+        minCopies: 3
+      - name: Alms of the Vein
+        minCopies: 3
+
+  # MTGDecks share: 3.09%
+  # Source: https://mtgdecks.net/Pauper/jeskai-ephemerate
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-edraros3-3043757
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-pewpew444-3043760
+  - name: Jeskai Ephemerate
+    signatureCards:
+      - name: Ephemerate
+        minCopies: 3
+      - name: Skred
+        minCopies: 3
+      - name: Archaeomancer
+        minCopies: 2
+
+  # MTGDecks share: 3.05%
+  # Source: https://mtgdecks.net/Pauper/white-weenie
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-krzng-3043772
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/white-weenie-decklist-by-christian-martini-3043368
+  - name: White Weenie
+    signatureCards:
+      - name: Battle Screech
+        minCopies: 3
+      - name: Guardians' Pledge
+        minCopies: 2
+      - name: Thraben Inspector
+        minCopies: 3
+
+  # MTGDecks share: 2.95%
+  # Source: https://mtgdecks.net/Pauper/spy-combo
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-sambucodeculo-3043881
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-frecuenza12-3043886
+  - name: Spy Combo
+    signatureCards:
+      - name: Balustrade Spy
+        minCopies: 3
+      - name: Dread Return
+        minCopies: 2
+      - name: Lotleth Giant
+        minCopies: 2
+
+  # MTGDecks share: 2.91%
+  # Source: https://mtgdecks.net/Pauper/gruul-ramp
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/gruul-monsters-decklist-by-brickhouse8-3042813
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/hunter-gets-blowgun-decklist-by-nakano-yusuke-3043278
+  - name: Gruul Ramp
+    signatureCards:
+      - name: Arbor Elf
+        minCopies: 3
+      - name: Utopia Sprawl
+        minCopies: 3
+      - name: Writhing Chrysalis
+        minCopies: 3
+
+  # MTGDecks share: 2.82%
+  # Source: https://mtgdecks.net/Pauper/dimir-terror
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/dimir-terror-decklist-by-rootbound-craig-3042814
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-nammersquats-3043868
+  - name: Dimir Terror
+    signatureCards:
+      - name: Tolarian Terror
+        minCopies: 3
+      - name: Gurmag Angler
+        minCopies: 2
+      - name: Sneaky Snacker
+        minCopies: 3
+
+  # MTGDecks share: 2.24%
+  # Source: https://mtgdecks.net/Pauper/mono-blue-faeries
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/mono-blue-faeries-decklist-by-elia-bartoli-3043369
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-19lnc91-3043878
+  - name: Mono Blue Faeries
+    signatureCards:
+      - name: Spellstutter Sprite
+        minCopies: 3
+      - name: Moon-Circuit Hacker
+        minCopies: 3
+      - name: Faerie Miscreant
+        minCopies: 3
+
+  # MTGDecks share: 2.00%
+  # Source: https://mtgdecks.net/Pauper/uwx-familiar
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-tspjendrek-3043870
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-bombaj-3042103
+  - name: UWx Familiar
+    signatureCards:
+      - name: Sunscape Familiar
+        minCopies: 3
+      - name: God-Pharaoh's Faithful
+        minCopies: 3
+      - name: Ephemerate
+        minCopies: 3
+
+  # MTGDecks share: 1.46%
+  # Source: https://mtgdecks.net/Pauper/flicker-tron
+  # Reviewed deck 1: https://mtgdecks.net/Pauper/deck-decklist-by-raptor56-3043875
+  # Reviewed deck 2: https://mtgdecks.net/Pauper/deck-decklist-by-tiramiilvino98-3042120
+  - name: Flicker Tron
+    signatureCards:
+      - name: Urza's Mine
+        minCopies: 3
+      - name: Urza's Power Plant
+        minCopies: 3
+      - name: Urza's Tower
+        minCopies: 3
+      - name: Ghostly Flicker
+        minCopies: 2
