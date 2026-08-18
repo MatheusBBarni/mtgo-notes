@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MTGONotes.App.Host;
 using MTGONotes.Core.Disclosure;
@@ -7,7 +6,7 @@ using MTGONotes.Core.Domain;
 
 namespace MTGONotes.App.ViewModels;
 
-public sealed partial class EncounterViewModel : ObservableObject
+public sealed partial class EncounterViewModel : ViewModel
 {
     private readonly AppHost _host;
 

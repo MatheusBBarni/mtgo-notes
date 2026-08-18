@@ -1,10 +1,9 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using MTGONotes.App.Host;
 using MTGONotes.Core.Disclosure;
 
 namespace MTGONotes.App.ViewModels;
 
-public sealed partial class MainShellViewModel : ObservableObject
+public sealed partial class MainShellViewModel : ViewModel
 {
     public MainShellViewModel(AppHost host)
     {

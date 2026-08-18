@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
 using MTGONotes.App.Host;
 using MTGONotes.Core.Disclosure;
 using MTGONotes.Core.Domain;
@@ -7,7 +6,7 @@ using MTGONotes.Core.Portability;
 
 namespace MTGONotes.App.ViewModels;
 
-public sealed partial class HistoryViewModel : ObservableObject
+public sealed partial class HistoryViewModel : ViewModel
 {
     private readonly AppHost _host;
     private bool _restricted;

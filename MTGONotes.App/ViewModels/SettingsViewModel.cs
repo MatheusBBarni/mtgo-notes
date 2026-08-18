@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MTGONotes.App.Host;
 using MTGONotes.Core.Domain;
@@ -8,7 +7,7 @@ using MTGONotes.Core.Settings;
 
 namespace MTGONotes.App.ViewModels;
 
-public sealed partial class SettingsViewModel : ObservableObject
+public sealed partial class SettingsViewModel : ViewModel
 {
     private readonly AppHost _host;
     private bool _loading = true;
