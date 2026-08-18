@@ -13,7 +13,4 @@ publish/
 *.user
 *.suo
 .DS_Store
-__oldversion__/node_modules/
-__oldversion__/dist/
-__oldversion__/src-tauri/target/
-__oldversion__/src-tauri/gen/
+

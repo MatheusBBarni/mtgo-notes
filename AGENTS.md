@@ -9,9 +9,7 @@ The active app is the unpackaged WinUI 3 host at the repo root:
 - `MTGONotes.Live` — read-only MTGO attach abstractions
 - `MTGONotes.App` — WinUI 3 shell
 - `tests/` — xUnit suites
-
-The previous Tauri 2 / React / Rust tree is frozen in `__oldversion__/`. Do not
-treat it as the default build.
+- `web/` — Astro brochure site
 
 ## Build, Test, and Development Commands
 
@@ -19,8 +17,6 @@ treat it as the default build.
 - `dotnet test tests/MTGONotes.Data.Tests/MTGONotes.Data.Tests.csproj`
 - `dotnet test tests/MTGONotes.Live.Tests/MTGONotes.Live.Tests.csproj`
 - Windows only: `dotnet build MTGONotes.App/MTGONotes.App.csproj -r win-x64`
-
-Legacy Tauri (only inside `__oldversion__/`): `npm ci` then `npm run verify`.
 
 ## Coding Style & Naming Conventions
 

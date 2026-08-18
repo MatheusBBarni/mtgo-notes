@@ -96,7 +96,6 @@ Local preview: http://127.0.0.1:4321/mtgo-notes
 - `MTGONotes.Live` — read-only MTGO attach abstractions
 - `web/` — brochure site
 - `tests/` — portable xUnit suites
-- `__oldversion__/` — frozen Tauri tree; not the default build
 
 ## Release
 
