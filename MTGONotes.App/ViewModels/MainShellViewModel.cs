@@ -3,8 +3,10 @@ using MTGONotes.Core.Disclosure;
 
 namespace MTGONotes.App.ViewModels;
 
-public sealed partial class MainShellViewModel : ViewModel
+public sealed class MainShellViewModel : ViewModel
 {
+    private string _liveStatus = string.Empty;
+
     public MainShellViewModel(AppHost host)
     {
         Encounter = new EncounterViewModel(host);
@@ -19,8 +21,11 @@ public sealed partial class MainShellViewModel : ViewModel
 
     public SettingsViewModel Settings { get; }
 
-    [ObservableProperty]
-    public partial string LiveStatus { get; set; } = string.Empty;
+    public string LiveStatus
+    {
+        get => _liveStatus;
+        set => SetProperty(ref _liveStatus, value);
+    }
 
     public void Apply(OverlayView view)
     {

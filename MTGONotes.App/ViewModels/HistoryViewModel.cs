@@ -6,37 +6,74 @@ using MTGONotes.Core.Portability;
 
 namespace MTGONotes.App.ViewModels;
 
-public sealed partial class HistoryViewModel : ViewModel
+public sealed class HistoryViewModel : ViewModel
 {
     private readonly AppHost _host;
     private bool _restricted;
+    private string _query = string.Empty;
+    private string _statusMessage = string.Empty;
+    private bool _isStatusOpen;
+    private bool _isStatusError;
+    private bool _isRestricted;
+    private bool _isEmpty;
+    private string _emptyTitle = "No encounters yet";
+    private string _emptyDetail = "Confirmed opponents appear here after an encounter is recorded.";
 
     public HistoryViewModel(AppHost host) => _host = host;
 
-    [ObservableProperty]
-    public partial string Query { get; set; } = string.Empty;
+    public string Query
+    {
+        get => _query;
+        set
+        {
+            if (SetProperty(ref _query, value))
+            {
+                Refresh();
+            }
+        }
+    }
 
-    [ObservableProperty]
-    public partial string StatusMessage { get; set; } = string.Empty;
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set => SetProperty(ref _statusMessage, value);
+    }
 
-    [ObservableProperty]
-    public partial bool IsStatusOpen { get; set; }
+    public bool IsStatusOpen
+    {
+        get => _isStatusOpen;
+        set => SetProperty(ref _isStatusOpen, value);
+    }
 
-    [ObservableProperty]
-    public partial bool IsStatusError { get; set; }
+    public bool IsStatusError
+    {
+        get => _isStatusError;
+        set => SetProperty(ref _isStatusError, value);
+    }
 
-    [ObservableProperty]
-    public partial bool IsRestricted { get; set; }
+    public bool IsRestricted
+    {
+        get => _isRestricted;
+        set => SetProperty(ref _isRestricted, value);
+    }
 
-    [ObservableProperty]
-    public partial bool IsEmpty { get; set; }
+    public bool IsEmpty
+    {
+        get => _isEmpty;
+        set => SetProperty(ref _isEmpty, value);
+    }
 
-    [ObservableProperty]
-    public partial string EmptyTitle { get; set; } = "No encounters yet";
+    public string EmptyTitle
+    {
+        get => _emptyTitle;
+        set => SetProperty(ref _emptyTitle, value);
+    }
 
-    [ObservableProperty]
-    public partial string EmptyDetail { get; set; } =
-        "Confirmed opponents appear here after an encounter is recorded.";
+    public string EmptyDetail
+    {
+        get => _emptyDetail;
+        set => SetProperty(ref _emptyDetail, value);
+    }
 
     public ObservableCollection<HistoryRow> Items { get; } = [];
 
@@ -102,8 +139,6 @@ public sealed partial class HistoryViewModel : ViewModel
             _host.Operations.End();
         }
     }
-
-    partial void OnQueryChanged(string value) => Refresh();
 
     private void ListRecent()
     {

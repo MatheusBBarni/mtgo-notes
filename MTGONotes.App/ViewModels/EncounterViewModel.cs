@@ -1,50 +1,113 @@
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.Input;
 using MTGONotes.App.Host;
 using MTGONotes.Core.Disclosure;
 using MTGONotes.Core.Domain;
 
 namespace MTGONotes.App.ViewModels;
 
-public sealed partial class EncounterViewModel : ViewModel
+public sealed class EncounterViewModel : ViewModel
 {
     private readonly AppHost _host;
+    private string _handle = string.Empty;
+    private string _phaseTitle = PresentationText.FormatEncounterHeading(InternalPhase.Idle, null);
+    private string _liveStatus = string.Empty;
+    private string _confirmedHandle = string.Empty;
+    private string _statusMessage = string.Empty;
+    private bool _isStatusOpen;
+    private bool _isStatusError;
+    private bool _isLivePaused;
+    private bool _hasConfirmedOpponent;
+    private string _pauseLabel = "Pause live attach";
 
-    public EncounterViewModel(AppHost host) => _host = host;
+    public EncounterViewModel(AppHost host)
+    {
+        _host = host;
+        ConfirmOpponentCommand = new RelayCommand(ConfirmOpponent, CanConfirm);
+        FinishEncounterCommand = new RelayCommand(FinishEncounter, CanFinish);
+        ToggleLivePauseCommand = new RelayCommand(ToggleLivePause);
+    }
 
-    [ObservableProperty]
-    public partial string Handle { get; set; } = string.Empty;
+    public string Handle
+    {
+        get => _handle;
+        set
+        {
+            if (SetProperty(ref _handle, value))
+            {
+                ConfirmOpponentCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
 
-    [ObservableProperty]
-    public partial string PhaseTitle { get; set; } = PresentationText.FormatEncounterHeading(InternalPhase.Idle, null);
+    public string PhaseTitle
+    {
+        get => _phaseTitle;
+        set => SetProperty(ref _phaseTitle, value);
+    }
 
-    [ObservableProperty]
-    public partial string LiveStatus { get; set; } = string.Empty;
+    public string LiveStatus
+    {
+        get => _liveStatus;
+        set => SetProperty(ref _liveStatus, value);
+    }
 
-    [ObservableProperty]
-    public partial string ConfirmedHandle { get; set; } = string.Empty;
+    public string ConfirmedHandle
+    {
+        get => _confirmedHandle;
+        set => SetProperty(ref _confirmedHandle, value);
+    }
 
-    [ObservableProperty]
-    public partial string StatusMessage { get; set; } = string.Empty;
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set => SetProperty(ref _statusMessage, value);
+    }
 
-    [ObservableProperty]
-    public partial bool IsStatusOpen { get; set; }
+    public bool IsStatusOpen
+    {
+        get => _isStatusOpen;
+        set => SetProperty(ref _isStatusOpen, value);
+    }
 
-    [ObservableProperty]
-    public partial bool IsStatusError { get; set; }
+    public bool IsStatusError
+    {
+        get => _isStatusError;
+        set => SetProperty(ref _isStatusError, value);
+    }
 
-    [ObservableProperty]
-    public partial bool IsLivePaused { get; set; }
+    public bool IsLivePaused
+    {
+        get => _isLivePaused;
+        set => SetProperty(ref _isLivePaused, value);
+    }
 
-    [ObservableProperty]
-    public partial bool HasConfirmedOpponent { get; set; }
+    public bool HasConfirmedOpponent
+    {
+        get => _hasConfirmedOpponent;
+        set
+        {
+            if (SetProperty(ref _hasConfirmedOpponent, value))
+            {
+                FinishEncounterCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
 
-    [ObservableProperty]
-    public partial string PauseLabel { get; set; } = "Pause live attach";
+    public string PauseLabel
+    {
+        get => _pauseLabel;
+        set => SetProperty(ref _pauseLabel, value);
+    }
 
     public ObservableCollection<ObservationItem> Notes { get; } = [];
 
     public bool HasNotes => Notes.Count > 0;
+
+    public RelayCommand ConfirmOpponentCommand { get; }
+
+    public RelayCommand FinishEncounterCommand { get; }
+
+    public RelayCommand ToggleLivePauseCommand { get; }
 
     public void Apply(OverlayView view)
     {
@@ -64,39 +127,24 @@ public sealed partial class EncounterViewModel : ViewModel
         FinishEncounterCommand.NotifyCanExecuteChanged();
     }
 
-    [RelayCommand(CanExecute = nameof(CanConfirm))]
     private void ConfirmOpponent()
     {
         var result = _host.Session.EnterOpponent(Handle);
-        if (result.IsSuccess)
-        {
-            SetStatus("Opponent confirmed.", isError: false);
-        }
-        else
-        {
-            SetStatus(result.Error!.Value.ToAppError().Message, isError: true);
-        }
-
+        SetStatus(
+            result.IsSuccess ? "Opponent confirmed." : result.Error!.Value.ToAppError().Message,
+            isError: !result.IsSuccess);
         Apply(_host.Session.CurrentView);
     }
 
-    [RelayCommand(CanExecute = nameof(CanFinish))]
     private void FinishEncounter()
     {
         var result = _host.Session.FinishEncounter();
-        if (result.IsSuccess)
-        {
-            SetStatus("Encounter finished.", isError: false);
-        }
-        else
-        {
-            SetStatus(result.Error!.Value.ToAppError().Message, isError: true);
-        }
-
+        SetStatus(
+            result.IsSuccess ? "Encounter finished." : result.Error!.Value.ToAppError().Message,
+            isError: !result.IsSuccess);
         Apply(_host.Session.CurrentView);
     }
 
-    [RelayCommand]
     private void ToggleLivePause()
     {
         var paused = !_host.Session.DetectionPaused;
@@ -104,11 +152,6 @@ public sealed partial class EncounterViewModel : ViewModel
         Apply(_host.Session.CurrentView);
         SetStatus(paused ? "Live attach paused." : "Live attach resumed.", isError: false);
     }
-
-    partial void OnHandleChanged(string value) => ConfirmOpponentCommand.NotifyCanExecuteChanged();
-
-    partial void OnHasConfirmedOpponentChanged(bool value) =>
-        FinishEncounterCommand.NotifyCanExecuteChanged();
 
     private bool CanConfirm() => !string.IsNullOrWhiteSpace(Handle);
 

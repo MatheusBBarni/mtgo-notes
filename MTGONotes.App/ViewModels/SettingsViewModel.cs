@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using CommunityToolkit.Mvvm.Input;
 using MTGONotes.App.Host;
 using MTGONotes.Core.Domain;
 using MTGONotes.Core.Providers;
@@ -7,43 +6,92 @@ using MTGONotes.Core.Settings;
 
 namespace MTGONotes.App.ViewModels;
 
-public sealed partial class SettingsViewModel : ViewModel
+public sealed class SettingsViewModel : ViewModel
 {
     private readonly AppHost _host;
     private bool _loading = true;
+    private bool _liveAttachEnabled;
+    private bool _officialDeckConsent;
+    private bool _overlayEnabled;
+    private bool _trayEnabled;
+    private bool _launchWithWindows;
+    private int _themeIndex;
+    private string _statusMessage = string.Empty;
+    private bool _isStatusOpen;
+    private bool _isStatusError;
 
     public SettingsViewModel(AppHost host)
     {
         _host = host;
+        OpenOfficialDecksCommand = new RelayCommand(OpenOfficialDecks);
         Reload();
     }
 
-    [ObservableProperty]
-    public partial bool LiveAttachEnabled { get; set; }
+    public bool LiveAttachEnabled
+    {
+        get => _liveAttachEnabled;
+        set => Persist(ref _liveAttachEnabled, value, () => _host.Settings.LiveAttachEnabled = value);
+    }
 
-    [ObservableProperty]
-    public partial bool OfficialDeckConsent { get; set; }
+    public bool OfficialDeckConsent
+    {
+        get => _officialDeckConsent;
+        set => Persist(ref _officialDeckConsent, value, () => _host.Settings.OfficialDeckConsent = value);
+    }
 
-    [ObservableProperty]
-    public partial bool OverlayEnabled { get; set; }
+    public bool OverlayEnabled
+    {
+        get => _overlayEnabled;
+        set => Persist(ref _overlayEnabled, value, () => _host.Settings.OverlayEnabled = value);
+    }
 
-    [ObservableProperty]
-    public partial bool TrayEnabled { get; set; }
+    public bool TrayEnabled
+    {
+        get => _trayEnabled;
+        set => Persist(ref _trayEnabled, value, () => _host.Settings.TrayEnabled = value);
+    }
 
-    [ObservableProperty]
-    public partial bool LaunchWithWindows { get; set; }
+    public bool LaunchWithWindows
+    {
+        get => _launchWithWindows;
+        set => Persist(ref _launchWithWindows, value, () => _host.Settings.LaunchWithWindows = value);
+    }
 
-    [ObservableProperty]
-    public partial int ThemeIndex { get; set; }
+    public int ThemeIndex
+    {
+        get => _themeIndex;
+        set
+        {
+            if (value < 0 || !SetProperty(ref _themeIndex, value) || _loading)
+            {
+                return;
+            }
 
-    [ObservableProperty]
-    public partial string StatusMessage { get; set; } = string.Empty;
+            _host.Settings.Theme = AppTheme.FromIndex(value);
+            _host.SaveSettings();
+            SetStatus("Settings saved.", isError: false);
+        }
+    }
 
-    [ObservableProperty]
-    public partial bool IsStatusOpen { get; set; }
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set => SetProperty(ref _statusMessage, value);
+    }
 
-    [ObservableProperty]
-    public partial bool IsStatusError { get; set; }
+    public bool IsStatusOpen
+    {
+        get => _isStatusOpen;
+        set => SetProperty(ref _isStatusOpen, value);
+    }
+
+    public bool IsStatusError
+    {
+        get => _isStatusError;
+        set => SetProperty(ref _isStatusError, value);
+    }
+
+    public RelayCommand OpenOfficialDecksCommand { get; }
 
     public void Reload()
     {
@@ -57,7 +105,6 @@ public sealed partial class SettingsViewModel : ViewModel
         _loading = false;
     }
 
-    [RelayCommand]
     private void OpenOfficialDecks()
     {
         if (!_host.Settings.OfficialDeckConsent)
@@ -77,31 +124,9 @@ public sealed partial class SettingsViewModel : ViewModel
         SetStatus("Opened official MTGO decklists.", isError: false);
     }
 
-    partial void OnLiveAttachEnabledChanged(bool value) => Persist(value, () => _host.Settings.LiveAttachEnabled = value);
-
-    partial void OnOfficialDeckConsentChanged(bool value) => Persist(value, () => _host.Settings.OfficialDeckConsent = value);
-
-    partial void OnOverlayEnabledChanged(bool value) => Persist(value, () => _host.Settings.OverlayEnabled = value);
-
-    partial void OnTrayEnabledChanged(bool value) => Persist(value, () => _host.Settings.TrayEnabled = value);
-
-    partial void OnLaunchWithWindowsChanged(bool value) => Persist(value, () => _host.Settings.LaunchWithWindows = value);
-
-    partial void OnThemeIndexChanged(int value)
+    private void Persist(ref bool field, bool value, Action assign)
     {
-        if (_loading || value < 0)
-        {
-            return;
-        }
-
-        _host.Settings.Theme = AppTheme.FromIndex(value);
-        _host.SaveSettings();
-        SetStatus("Settings saved.", isError: false);
-    }
-
-    private void Persist(bool _, Action assign)
-    {
-        if (_loading)
+        if (!SetProperty(ref field, value) || _loading)
         {
             return;
         }
