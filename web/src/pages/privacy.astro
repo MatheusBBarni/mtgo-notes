@@ -4,10 +4,14 @@ import { copy } from "../content/copy";
 ---
 
 <BaseLayout title="Privacy — MTGO Opponent Notes">
-  <h1>Privacy</h1>
-  <p>{copy.privacy.noSignup}</p>
-  <p>{copy.privacy.telemetry}</p>
-  <p>{copy.privacy.local}</p>
-  <p>{copy.privacy.backups}</p>
-  <p>{copy.privacy.exportWarning}</p>
+  <article class="page">
+    <h1>Privacy</h1>
+    <ul class="stack">
+      <li>{copy.privacy.noSignup}</li>
+      <li>{copy.privacy.telemetry}</li>
+      <li>{copy.privacy.local}</li>
+      <li>{copy.privacy.backups}</li>
+      <li>{copy.privacy.exportWarning}</li>
+    </ul>
+  </article>
 </BaseLayout>

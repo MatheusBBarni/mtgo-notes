@@ -4,13 +4,17 @@ import { copy } from "../content/copy";
 ---
 
 <BaseLayout title="How it works — MTGO Opponent Notes">
-  <h1>How it works</h1>
-  <p>{copy.howItWorks.notebook}</p>
-  <p>{copy.howItWorks.confirm}</p>
-  <p>{copy.howItWorks.overlay}</p>
-  <p>{copy.howItWorks.hiddenHistory}</p>
-  <p>{copy.howItWorks.publicPreview}</p>
-  <figure class="screenshot-placeholder">
-    <figcaption>{copy.howItWorks.screenshotCaption}</figcaption>
-  </figure>
+  <article class="page">
+    <h1>How it works</h1>
+    <ol class="stack">
+      <li>{copy.howItWorks.notebook}</li>
+      <li>{copy.howItWorks.confirm}</li>
+      <li>{copy.howItWorks.overlay}</li>
+      <li>{copy.howItWorks.hiddenHistory}</li>
+      <li>{copy.howItWorks.publicPreview}</li>
+    </ol>
+    <figure class="screenshot-placeholder">
+      <figcaption>{copy.howItWorks.screenshotCaption}</figcaption>
+    </figure>
+  </article>
 </BaseLayout>
