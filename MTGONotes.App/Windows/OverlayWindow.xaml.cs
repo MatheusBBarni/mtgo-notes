@@ -41,8 +41,7 @@ public sealed partial class OverlayWindow : Window
 
     public void Bind(OverlayView view)
     {
-        var handle = view.ConfirmedHandle ?? "unconfirmed";
-        PhaseText.Text = $"{FormatPhase(view.Phase)} — {handle}";
+        PhaseText.Text = PresentationText.FormatOverlayHeading(view.Phase, view.ConfirmedHandle);
         NotesList.ItemsSource = view.CurrentObservations.Select(note => note.Text).ToArray();
 
         var candidate = _host.Session.Candidate;
@@ -143,13 +142,4 @@ public sealed partial class OverlayWindow : Window
         return false;
     }
 
-    private static string FormatPhase(InternalPhase phase) =>
-        phase switch
-        {
-            InternalPhase.InGameRestricted => "In game",
-            InternalPhase.PreMatch => "Pre-match",
-            InternalPhase.BetweenGames => "Between games",
-            InternalPhase.CompletionPending => "Completing",
-            _ => phase.ToString(),
-        };
 }

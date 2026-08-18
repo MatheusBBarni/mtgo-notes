@@ -1,56 +1,43 @@
-using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using MTGONotes.App.Helpers;
 using MTGONotes.App.Host;
 using MTGONotes.App.Native;
+using MTGONotes.App.Pages;
 using MTGONotes.App.Themes;
+using MTGONotes.App.ViewModels;
 using MTGONotes.Core.Disclosure;
-using MTGONotes.Core.Domain;
-using MTGONotes.Core.Portability;
-using MTGONotes.Core.Providers;
-using MTGONotes.Core.Settings;
-using Windows.Storage.Pickers;
-using WinRT.Interop;
 
 namespace MTGONotes.App.Windows;
 
 public sealed partial class MainWindow : Window
 {
     private readonly AppHost _host;
-    private bool _loadingSettings = true;
 
     public MainWindow(AppHost host)
     {
         _host = host;
+        Vm = new MainShellViewModel(host);
         InitializeComponent();
         Title = "MTGO Opponent Notes";
-        BrandImage.Source = AppIcon.Image();
-        ThemeService.Apply(this, host.Settings.Theme);
-        AppWindow.Resize(new global::Windows.Graphics.SizeInt32(1200, 800));
-        if (AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter)
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(AppTitleBar);
+        if (AppIcon.Image() is { } image)
         {
-            presenter.PreferredMinimumWidth = 960;
-            presenter.PreferredMinimumHeight = 680;
+            TitleBarIcon.ImageSource = image;
         }
-        LoadSettings();
-        Bind(host.Session.CurrentView);
+
+        ThemeService.Apply(this, host.Settings.Theme);
+        WindowSizing.Resize(this, WindowSizing.MainWidthDip, WindowSizing.MainHeightDip);
+        WindowSizing.SetMinimum(this, WindowSizing.MainMinWidthDip, WindowSizing.MainMinHeightDip);
+        Vm.Apply(host.Session.CurrentView);
+        ShowPage("encounter");
     }
 
-    public void Bind(OverlayView view)
-    {
-        var handle = view.ConfirmedHandle ?? "No confirmed opponent";
-        PhaseText.Text = $"{view.Phase} — {handle}";
-        LiveText.Text = _host.StartupWarning is { } warning
-            ? $"Notebook unavailable: {warning}"
-            : _host.Live.IsAttached
-                ? "Live attach: connected"
-                : "Live attach: waiting for a logged-in MTGO client";
-        NotesList.ItemsSource = view.CurrentObservations.Select(note => note.Text).ToArray();
-        if (!_host.Session.AuthorizeHistory().IsSuccess)
-        {
-            HistoryList.ItemsSource = new[] { "History hidden during possible gameplay." };
-        }
-    }
+    public MainShellViewModel Vm { get; }
+
+    public void Apply(OverlayView view) => Vm.Apply(view);
 
     public async Task MaybeOnboardAsync()
     {
@@ -66,209 +53,83 @@ public sealed partial class MainWindow : Window
                 "This companion can read the already-logged-in MTGO process to detect opponents and match phase. It never logs on, never stores your password, and never writes into MTGO. You can pause or disable it at any time. This is unofficial and is not tournament-approved.",
             PrimaryButtonText = "Enable live attach",
             CloseButtonText = "Use manual entry only",
+            DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot,
         };
         var result = await dialog.ShowAsync();
         _host.Settings.LiveAttachAcknowledged = true;
         _host.Settings.LiveAttachEnabled = result == ContentDialogResult.Primary;
         _host.SaveSettings();
-        LoadSettings();
+        Vm.Settings.Reload();
+        Vm.Apply(_host.Session.CurrentView);
     }
 
-    private void LoadSettings()
-    {
-        _loadingSettings = true;
-        LiveConsentBox.IsChecked = _host.Settings.LiveAttachEnabled;
-        DeckConsentBox.IsChecked = _host.Settings.OfficialDeckConsent;
-        OverlayBox.IsChecked = _host.Settings.OverlayEnabled;
-        TrayBox.IsChecked = _host.Settings.TrayEnabled;
-        AutostartBox.IsChecked = _host.Settings.LaunchWithWindows;
-        ThemeBox.SelectedIndex = AppTheme.IndexOf(_host.Settings.Theme);
-        _loadingSettings = false;
-    }
+    private void OnPaneToggleRequested(TitleBar sender, object args) =>
+        RootNav.IsPaneOpen = !RootNav.IsPaneOpen;
 
-    private void OnThemeChanged(object sender, SelectionChangedEventArgs e)
+    private void OnRootSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (_loadingSettings || ThemeBox.SelectedIndex < 0)
+        if (e.NewSize.Width < WindowSizing.PhoneWidth)
         {
+            RootNav.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+            RootNav.IsPaneOpen = false;
             return;
         }
 
-        _host.Settings.Theme = AppTheme.FromIndex(ThemeBox.SelectedIndex);
-        _host.SaveSettings();
-        SettingsStatus.Text = "Settings saved.";
-    }
-
-    private void OnEncounterTab(object sender, RoutedEventArgs e) => Show("encounter");
-
-    private void OnHistoryTab(object sender, RoutedEventArgs e) => Show("history");
-
-    private void OnSettingsTab(object sender, RoutedEventArgs e) => Show("settings");
-
-    private void Show(string panel)
-    {
-        EncounterPanel.Visibility = panel == "encounter" ? Visibility.Visible : Visibility.Collapsed;
-        HistoryPanel.Visibility = panel == "history" ? Visibility.Visible : Visibility.Collapsed;
-        SettingsPanel.Visibility = panel == "settings" ? Visibility.Visible : Visibility.Collapsed;
-        if (panel == "history")
+        if (e.NewSize.Width < WindowSizing.CompactWidth)
         {
-            RefreshHistory();
-        }
-    }
-
-    private void OnConfirmClick(object sender, RoutedEventArgs e)
-    {
-        var result = _host.Session.EnterOpponent(HandleBox.Text);
-        StatusText.Text = result.IsSuccess ? "Opponent confirmed." : result.Error!.Value.ToAppError().Message;
-        Bind(_host.Session.CurrentView);
-    }
-
-    private void OnFinishClick(object sender, RoutedEventArgs e)
-    {
-        var result = _host.Session.FinishEncounter();
-        StatusText.Text = result.IsSuccess ? "Encounter finished." : result.Error!.Value.ToAppError().Message;
-        Bind(_host.Session.CurrentView);
-    }
-
-    private void OnPauseLiveClick(object sender, RoutedEventArgs e)
-    {
-        var paused = !_host.Session.DetectionPaused;
-        _ = _host.Session.PauseDetection(paused);
-        PauseLiveButton.Content = paused ? "Resume live attach" : "Pause live attach";
-        StatusText.Text = paused ? "Live attach paused." : "Live attach resumed.";
-    }
-
-    private void OnSearchHistory(object sender, RoutedEventArgs e)
-    {
-        var result = _host.Session.SearchHistory(HistoryQuery.Text);
-        if (!result.IsSuccess)
-        {
-            HistoryList.ItemsSource = new[] { result.Error!.Value.ToAppError().Message };
+            RootNav.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+            RootNav.IsPaneOpen = false;
             return;
         }
 
-        HistoryList.ItemsSource = result.Value!.Items
-            .Select(item => $"{item.EntityType}: {item.Content}")
-            .ToArray();
+        RootNav.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+        RootNav.IsPaneOpen = true;
     }
 
-    private void RefreshHistory()
+    private void OnNavSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        var result = _host.Session.ListRecentEncounters();
-        if (!result.IsSuccess)
+        if (args.SelectedItem is NavigationViewItem { Tag: string tag })
         {
-            HistoryList.ItemsSource = new[] { result.Error!.Value.ToAppError().Message };
-            return;
-        }
-
-        HistoryList.ItemsSource = result.Value!
-            .Select(item => $"{item.Handle} — {item.Status} — {item.Phase}")
-            .ToArray();
-    }
-
-    private async void OnExportText(object sender, RoutedEventArgs e)
-    {
-        var dump = _host.Session.ExportLogical();
-        if (!dump.IsSuccess)
-        {
-            HistoryList.ItemsSource = new[] { dump.Error!.Value.ToAppError().Message };
-            return;
-        }
-
-        var path = await PickSaveAsync("notes.txt");
-        if (path is null)
-        {
-            return;
-        }
-
-        await File.WriteAllTextAsync(path, TextExporter.Render(dump.Value!));
-    }
-
-    private async void OnBackup(object sender, RoutedEventArgs e)
-    {
-        if (!_host.Operations.Begin("backup").IsSuccess)
-        {
-            HistoryList.ItemsSource = new[] { "Another notebook operation is running." };
-            return;
-        }
-
-        try
-        {
-            var dump = _host.Session.ExportLogical();
-            if (!dump.IsSuccess)
-            {
-                HistoryList.ItemsSource = new[] { dump.Error!.Value.ToAppError().Message };
-                return;
-            }
-
-            var path = await PickSaveAsync("notebook.mtgonotes");
-            if (path is null)
-            {
-                return;
-            }
-
-            var dialog = new ContentDialog
-            {
-                Title = "Backup passphrase",
-                Content = new PasswordBox { Name = "Passphrase", PlaceholderText = "Cannot be recovered" },
-                PrimaryButtonText = "Create backup",
-                CloseButtonText = "Cancel",
-                XamlRoot = Content.XamlRoot,
-            };
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary
-                || dialog.Content is not PasswordBox box)
-            {
-                return;
-            }
-
-            var written = NotebookBackup.Write(path, dump.Value!, box.Password);
-            HistoryList.ItemsSource = new[]
-            {
-                written.IsSuccess ? "Backup written." : written.Error!.Value.ToAppError().Message,
-            };
-        }
-        finally
-        {
-            _host.Operations.End();
+            ShowPage(tag);
         }
     }
 
-    private void OnSettingsSave(object sender, RoutedEventArgs e)
+    private void OnGoEncounter(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
-        _host.Settings.LiveAttachEnabled = LiveConsentBox.IsChecked == true;
-        _host.Settings.OfficialDeckConsent = DeckConsentBox.IsChecked == true;
-        _host.Settings.OverlayEnabled = OverlayBox.IsChecked == true;
-        _host.Settings.TrayEnabled = TrayBox.IsChecked == true;
-        _host.Settings.LaunchWithWindows = AutostartBox.IsChecked == true;
-        _host.SaveSettings();
-        SettingsStatus.Text = "Settings saved.";
+        RootNav.SelectedItem = EncounterNavItem;
+        args.Handled = true;
     }
 
-    private void OnOpenOfficialDecks(object sender, RoutedEventArgs e)
+    private void OnGoHistory(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
-        if (!_host.Settings.OfficialDeckConsent)
-        {
-            SettingsStatus.Text = RepoError.ConsentRequired.ToAppError().Message;
-            return;
-        }
-
-        var url = OfficialDeckProvider.ValidateOfficialUrl(OfficialDeckProvider.OfficialDecklistUrl);
-        if (!url.IsSuccess)
-        {
-            SettingsStatus.Text = url.Error!.Value.ToAppError().Message;
-            return;
-        }
-
-        Process.Start(new ProcessStartInfo(url.Value!.ToString()) { UseShellExecute = true });
+        RootNav.SelectedItem = HistoryNavItem;
+        args.Handled = true;
     }
 
-    private async Task<string?> PickSaveAsync(string name)
+    private void OnGoSettings(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
-        var picker = new FileSavePicker();
-        InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
-        picker.SuggestedFileName = name;
-        picker.FileTypeChoices.Add("Export", [Path.GetExtension(name)]);
-        var file = await picker.PickSaveFileAsync();
-        return file?.Path;
+        RootNav.SelectedItem = SettingsNavItem;
+        args.Handled = true;
+    }
+
+    private void ShowPage(string tag)
+    {
+        object page = tag switch
+        {
+            "history" => ContentFrame.Content is HistoryPage ? ContentFrame.Content : new HistoryPage(Vm.History),
+            "settings" => ContentFrame.Content is SettingsPage ? ContentFrame.Content : new SettingsPage(Vm.Settings),
+            _ => ContentFrame.Content is EncounterPage ? ContentFrame.Content : new EncounterPage(Vm.Encounter),
+        };
+
+        if (!ReferenceEquals(ContentFrame.Content, page))
+        {
+            ContentFrame.Content = page;
+        }
+
+        if (RootNav.DisplayMode is NavigationViewDisplayMode.Minimal or NavigationViewDisplayMode.Compact)
+        {
+            RootNav.IsPaneOpen = false;
+        }
     }
 }

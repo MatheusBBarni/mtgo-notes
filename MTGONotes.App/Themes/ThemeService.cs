@@ -1,3 +1,4 @@
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using MTGONotes.App.Native;
 using MTGONotes.Core.Settings;
@@ -46,6 +47,35 @@ internal static class ThemeService
     private static void ApplyTitleBar(Window window, ElementTheme theme)
     {
         var titleBar = OverlayHwnd.AppWindowFor(window).TitleBar;
+        if (new AccessibilitySettings().HighContrast)
+        {
+            return;
+        }
+
+        if (window.ExtendsContentIntoTitleBar)
+        {
+            titleBar.ButtonBackgroundColor = Colors.Transparent;
+            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            var ink = IsDark(theme)
+                ? Color.FromArgb(255, 0xF5, 0xF6, 0xF7)
+                : Color.FromArgb(255, 0x18, 0x1D, 0x26);
+            var hover = IsDark(theme)
+                ? Color.FromArgb(255, 0x2D, 0x32, 0x3B)
+                : Color.FromArgb(255, 0xE0, 0xE2, 0xE6);
+            var pressed = IsDark(theme)
+                ? Color.FromArgb(255, 0x3A, 0x40, 0x4A)
+                : Color.FromArgb(255, 0xDD, 0xDD, 0xDD);
+            titleBar.ButtonForegroundColor = ink;
+            titleBar.ButtonHoverBackgroundColor = hover;
+            titleBar.ButtonHoverForegroundColor = ink;
+            titleBar.ButtonPressedBackgroundColor = pressed;
+            titleBar.ButtonPressedForegroundColor = ink;
+            titleBar.ButtonInactiveForegroundColor = IsDark(theme)
+                ? Color.FromArgb(255, 0xB4, 0xB8, 0xC0)
+                : Color.FromArgb(255, 0x41, 0x45, 0x4D);
+            return;
+        }
+
         if (IsDark(theme))
         {
             var canvas = Color.FromArgb(255, 0x18, 0x1D, 0x26);

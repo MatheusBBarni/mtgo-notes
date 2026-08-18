@@ -16,6 +16,8 @@ public partial class App : Application
 
     internal SingleInstance? SingleInstance { get; }
 
+    internal Window? MainWindow { get; set; }
+
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         if (SingleInstance is not { IsOwner: true })

@@ -18,21 +18,13 @@ public sealed partial class CaptureWindow : Window
         InitializeComponent();
         Title = "Quick capture";
         ThemeService.Apply(this, host.Settings.Theme);
-        OverlayHwnd.ConfigureChrome(this, 420, 160);
+        OverlayHwnd.ConfigureChrome(this, 420, 200);
     }
 
     public void Open()
     {
         var opened = _host.Session.OpenCapture();
-        if (!opened.IsSuccess)
-        {
-            ErrorText.Text = opened.Error!.Value.ToAppError().Message;
-        }
-        else
-        {
-            ErrorText.Text = string.Empty;
-        }
-
+        SetError(opened.IsSuccess ? null : opened.Error!.Value.ToAppError().Message);
         OverlayHwnd.AppWindowFor(this).Show();
         NoteBox.Focus(FocusState.Programmatic);
         Activate();
@@ -57,14 +49,20 @@ public sealed partial class CaptureWindow : Window
         if (result.IsSuccess)
         {
             NoteBox.Text = string.Empty;
-            ErrorText.Text = string.Empty;
+            SetError(null);
             AppWindow.Hide();
         }
         else
         {
-            ErrorText.Text = result.Error!.Value.ToAppError().Message;
+            SetError(result.Error!.Value.ToAppError().Message);
         }
 
         e.Handled = true;
+    }
+
+    private void SetError(string? message)
+    {
+        CaptureStatus.Message = message ?? string.Empty;
+        CaptureStatus.IsOpen = !string.IsNullOrWhiteSpace(message);
     }
 }
