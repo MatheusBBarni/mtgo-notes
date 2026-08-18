@@ -61,6 +61,11 @@ public sealed class AppHost
         };
 
         _main = new MainWindow(this);
+        if (Application.Current is App app)
+        {
+            app.MainWindow = _main;
+        }
+
         _overlay = new OverlayWindow(this);
         _capture = new CaptureWindow(this);
         AppIcon.Apply(_main);
@@ -241,7 +246,7 @@ public sealed class AppHost
 
     private void DispatchBind(Core.Disclosure.OverlayView view)
     {
-        _main?.DispatcherQueue.TryEnqueue(() => _main.Bind(view));
+        _main?.DispatcherQueue.TryEnqueue(() => _main.Apply(view));
         _overlay?.DispatcherQueue.TryEnqueue(() => _overlay.Bind(view));
     }
 

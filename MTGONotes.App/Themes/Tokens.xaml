@@ -35,13 +35,13 @@
             <SolidColorBrush x:Key="FocusBrush" Color="#458FFF" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="CanvasBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="InkBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="BodyBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="MutedBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
-            <SolidColorBrush x:Key="HairlineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="SurfaceSoftBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="FocusBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <StaticResource x:Key="CanvasBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="InkBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="BodyBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="MutedBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="HairlineBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="SurfaceSoftBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="FocusBrush" ResourceKey="SystemColorHighlightColorBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <x:Double x:Key="Space100">4</x:Double>

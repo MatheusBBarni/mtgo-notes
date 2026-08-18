@@ -1,0 +1,129 @@
+<Page
+    x:Class="MTGONotes.App.Pages.HistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:MTGONotes.App.Helpers"
+    xmlns:vm="using:MTGONotes.App.ViewModels"
+    x:DefaultBindMode="OneWay">
+    <Grid x:Name="PageRoot" Padding="24">
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="F" Modifiers="Control" Invoked="OnFocusSearch" />
+        </Grid.KeyboardAccelerators>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="WidthStates">
+                <VisualState x:Name="Wide">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1008" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="PageRoot.Padding" Value="24" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Medium">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="640" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="PageRoot.Padding" Value="16" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Narrow">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="PageRoot.Padding" Value="12" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="History" />
+        <InfoBar
+            x:Name="HistoryStatus"
+            Grid.Row="1"
+            Margin="0,12,0,0"
+            AutomationProperties.AutomationId="InfHistory"
+            IsClosable="True"
+            IsOpen="{x:Bind Vm.IsStatusOpen, Mode=TwoWay}"
+            Message="{x:Bind Vm.StatusMessage}"
+            Severity="{x:Bind helpers:XamlConverters.StatusSeverity(Vm.IsStatusError)}" />
+        <AutoSuggestBox
+            x:Name="HistorySearch"
+            Grid.Row="2"
+            Margin="0,16,0,0"
+            AutomationProperties.AutomationId="TxtHistoryQuery"
+            Header="Search history"
+            PlaceholderText="Search encounters and notes"
+            QuerySubmitted="OnQuerySubmitted"
+            Text="{x:Bind Vm.Query, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            <AutoSuggestBox.QueryIcon>
+                <SymbolIcon Symbol="Find" />
+            </AutoSuggestBox.QueryIcon>
+        </AutoSuggestBox>
+        <CommandBar
+            Grid.Row="3"
+            Margin="0,8,0,8"
+            Background="Transparent"
+            DefaultLabelPosition="Right">
+            <AppBarButton
+                AutomationProperties.AutomationId="BtnExportText"
+                Click="OnExportText"
+                Icon="Save"
+                Label="Export text" />
+            <AppBarButton
+                AutomationProperties.AutomationId="BtnBackup"
+                Click="OnBackup"
+                Icon="Copy"
+                Label="Backup" />
+        </CommandBar>
+        <Grid Grid.Row="4">
+            <ListView
+                x:Name="HistoryList"
+                AutomationProperties.AutomationId="LstHistory"
+                AutomationProperties.Name="History results"
+                ItemsSource="{x:Bind Vm.Items}"
+                SelectionMode="None"
+                Visibility="{x:Bind helpers:XamlConverters.CollapsedWhen(Vm.IsEmpty)}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:HistoryRow">
+                        <StackPanel Padding="0,8" Spacing="2">
+                            <TextBlock
+                                Style="{StaticResource BodyTextBlockStyle}"
+                                Text="{x:Bind Title}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{x:Bind Detail}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <StackPanel
+                MaxWidth="480"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Spacing="8"
+                Visibility="{x:Bind helpers:XamlConverters.VisibleWhen(Vm.IsEmpty)}">
+                <TextBlock
+                    AutomationProperties.AutomationId="LblHistoryEmpty"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    Text="{x:Bind Vm.EmptyTitle}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Text="{x:Bind Vm.EmptyDetail}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

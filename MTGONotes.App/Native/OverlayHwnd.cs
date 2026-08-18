@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using MTGONotes.App.Helpers;
 using WinRT.Interop;
 
 namespace MTGONotes.App.Native;
@@ -44,7 +45,7 @@ internal static partial class OverlayHwnd
         }
 
         appWindow.IsShownInSwitchers = false;
-        appWindow.Resize(new global::Windows.Graphics.SizeInt32(width, height));
+        WindowSizing.Resize(window, width, height);
         RoundCorners(window);
         ApplyToolStyle(window, clickThrough: false);
     }
@@ -70,8 +71,8 @@ internal static partial class OverlayHwnd
         _ = SendMessageW(hwnd, WmSysCommand, ScMoveCaption, 0);
     }
 
-    public static void Resize(Window window, int width, int height) =>
-        AppWindowFor(window).Resize(new global::Windows.Graphics.SizeInt32(width, height));
+    public static void Resize(Window window, int widthDip, int heightDip) =>
+        WindowSizing.Resize(window, widthDip, heightDip);
 
     public static void RestorePosition(Window window, int x, int y)
     {
