@@ -11,15 +11,41 @@ Unofficial. Not affiliated with Wizards of the Coast or Daybreak Game Company.
 Live attach is optional, read-only, and not legal advice. Daybreak may still
 terminate accounts under their EULA.
 
-## What it does
+## Features
 
-- Confirm an opponent before anything is saved
-- Capture a short note between games
-- Recall history when you are not playing
-- Optional read-only attach to an already-logged-in MTGO process (no `LogOn`,
-  password, chat, queue, or concede)
+**Local notebook**
+Notes and opponent profiles live on your machine. There is no signup, no cloud
+notebook, and no telemetry.
 
-Notes stay on your machine. There is no signup and no telemetry.
+**Confirm before persist**
+An opponent nickname is previewed first. Nothing is written to history until
+you confirm it.
+
+**Fast capture**
+Write a short personal note between games. History stays hidden during possible
+gameplay.
+
+**Click-through overlay**
+The overlay does not steal clicks from MTGO.
+
+**Player workspace**
+Save one local **Player identity** (your MTGO nickname). Lookups never start
+just because you saved it.
+
+**Public result lookup**
+An explicit, consented search of an enabled public provider. Only an exact
+nickname match is offered. You preview candidates before import. An imported
+public result is a read-only snapshot with its source. It is not “their current
+deck,” and a refresh never silently overwrites what you already imported.
+
+**Live attach (optional)**
+Off means manual notes only. On is a read-only attach to an already-logged-in
+MTGO process. It does not call `LogOn` and does not send a password, chat,
+queue, or concede. Confirmation is still required before history changes.
+
+**Export and backups**
+Backups are yours to make. Text export is unencrypted — treat those files as
+plaintext.
 
 ## Install
 
