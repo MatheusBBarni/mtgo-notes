@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "thermo-nuclear-code-quality-review": {
+      "source": "cursor/plugins",
+      "sourceType": "github",
+      "skillPath": "cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md",
+      "computedHash": "9052b01b46b1d8dbf94c45f9313ec1983443f9a460e83d49cdc7fe0f640ca476"
+    },
+    "winui-app": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/winui-app/SKILL.md",
+      "computedHash": "6231a756230fbf412b05e38249d47c3ced6ab51944bcfb6ea3452f026bcbe848"
+    },
+    "winui-code-review": {
+      "source": "microsoft/win-dev-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/winui/skills/winui-code-review/SKILL.md",
+      "computedHash": "b1f78bf281f2da38ee44c25d3bbe573e52a2eeb8c07947a40feeebfacfbc35e6"
+    },
+    "winui-design": {
+      "source": "microsoft/win-dev-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/winui/skills/winui-design/SKILL.md",
+      "computedHash": "d6c1daeecb3cd47af2862f8d6e817fd6fef8438c6dd82b7cda1bff406c763582"
+    },
+    "winui-dev-workflow": {
+      "source": "microsoft/win-dev-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/winui/skills/winui-dev-workflow/SKILL.md",
+      "computedHash": "baec1bdf4b7d4328cfd6ff982b41797add7d39090752bdb168ebfe9646a83d19"
+    },
+    "winui-ui-testing": {
+      "source": "microsoft/win-dev-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/winui/skills/winui-ui-testing/SKILL.md",
+      "computedHash": "9eb7a30118a190eb3c9ca346291df516b80ef235ed91117a08c5f4e821ca2517"
+    }
+  }
+}
