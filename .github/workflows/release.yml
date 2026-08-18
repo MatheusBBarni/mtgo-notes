@@ -9,7 +9,7 @@ on:
       version:
         description: "Release version without the v prefix (used only when not tagging)"
         required: false
-        default: "0.2.1"
+        default: "0.3.0"
 
 permissions:
   contents: write

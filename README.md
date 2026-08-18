@@ -101,8 +101,8 @@ Local preview: http://127.0.0.1:4321/mtgo-notes
 ## Release
 
 ```bash
-git tag v0.2.1
-git push origin v0.2.1
+git tag v0.3.0
+git push origin v0.3.0
 ```
 
 The **Release Windows app** workflow publishes
