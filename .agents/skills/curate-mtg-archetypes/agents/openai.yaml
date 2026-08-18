@@ -1,0 +1,4 @@
+interface:
+  display_name: "Curate MTG Archetypes"
+  short_description: "Build evidence-backed archetype YAML drafts"
+  default_prompt: "Use $curate-mtg-archetypes format=Standard to research and draft an evidence-backed Standard archetype YAML file."
