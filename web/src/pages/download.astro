@@ -5,12 +5,10 @@ import { copy } from "../content/copy";
 ---
 
 <BaseLayout title="Download — MTGO Opponent Notes">
-  <h1>Download</h1>
-  <DownloadCta />
-  <p id="download-version"></p>
-  <p>{copy.requirements}</p>
-  <p>{copy.liveAttachHint}</p>
-  <p>
-    <a href={copy.githubReleasesHref}>{copy.githubReleasesLabel}</a>
-  </p>
+  <article class="page">
+    <h1>Download</h1>
+    <DownloadCta />
+    <p>{copy.requirements}</p>
+    <p>{copy.liveAttachHint}</p>
+  </article>
 </BaseLayout>

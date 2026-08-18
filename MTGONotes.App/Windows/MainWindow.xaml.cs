@@ -2,6 +2,8 @@ using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MTGONotes.App.Host;
+using MTGONotes.App.Native;
+using MTGONotes.App.Themes;
 using MTGONotes.Core.Disclosure;
 using MTGONotes.Core.Domain;
 using MTGONotes.Core.Portability;
@@ -15,13 +17,21 @@ namespace MTGONotes.App.Windows;
 public sealed partial class MainWindow : Window
 {
     private readonly AppHost _host;
+    private bool _loadingSettings = true;
 
     public MainWindow(AppHost host)
     {
         _host = host;
         InitializeComponent();
         Title = "MTGO Opponent Notes";
+        BrandImage.Source = AppIcon.Image();
+        ThemeService.Apply(this, host.Settings.Theme);
         AppWindow.Resize(new global::Windows.Graphics.SizeInt32(1200, 800));
+        if (AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter)
+        {
+            presenter.PreferredMinimumWidth = 960;
+            presenter.PreferredMinimumHeight = 680;
+        }
         LoadSettings();
         Bind(host.Session.CurrentView);
     }
@@ -67,11 +77,26 @@ public sealed partial class MainWindow : Window
 
     private void LoadSettings()
     {
+        _loadingSettings = true;
         LiveConsentBox.IsChecked = _host.Settings.LiveAttachEnabled;
         DeckConsentBox.IsChecked = _host.Settings.OfficialDeckConsent;
         OverlayBox.IsChecked = _host.Settings.OverlayEnabled;
         TrayBox.IsChecked = _host.Settings.TrayEnabled;
         AutostartBox.IsChecked = _host.Settings.LaunchWithWindows;
+        ThemeBox.SelectedIndex = AppTheme.IndexOf(_host.Settings.Theme);
+        _loadingSettings = false;
+    }
+
+    private void OnThemeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loadingSettings || ThemeBox.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        _host.Settings.Theme = AppTheme.FromIndex(ThemeBox.SelectedIndex);
+        _host.SaveSettings();
+        SettingsStatus.Text = "Settings saved.";
     }
 
     private void OnEncounterTab(object sender, RoutedEventArgs e) => Show("encounter");

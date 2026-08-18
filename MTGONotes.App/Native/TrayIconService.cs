@@ -21,12 +21,15 @@ internal sealed class TrayIconService : IDisposable
     public const int CommandQuit = 4;
 
     private readonly nint _hwnd;
+    private nint _icon;
+    private bool _ownsIcon;
     private bool _added;
 
     public TrayIconService(nint hwnd) => _hwnd = hwnd;
 
     public void Add(string tip)
     {
+        _icon = AppIcon.LoadSmallHandle(out _ownsIcon);
         var data = CreateData(tip);
         _added = Shell_NotifyIcon(NimAdd, ref data);
     }
@@ -54,14 +57,19 @@ internal sealed class TrayIconService : IDisposable
 
     public void Dispose()
     {
-        if (!_added)
+        if (_added)
         {
-            return;
+            var data = CreateData(string.Empty);
+            _ = Shell_NotifyIcon(NimDelete, ref data);
+            _added = false;
         }
 
-        var data = CreateData(string.Empty);
-        _ = Shell_NotifyIcon(NimDelete, ref data);
-        _added = false;
+        if (_ownsIcon && _icon != nint.Zero)
+        {
+            _ = DestroyIcon(_icon);
+            _icon = nint.Zero;
+            _ownsIcon = false;
+        }
     }
 
     private NotifyIconData CreateData(string tip)
@@ -73,7 +81,7 @@ internal sealed class TrayIconService : IDisposable
             uID = 1,
             uFlags = NifMessage | NifIcon | NifTip,
             uCallbackMessage = WindowMessages.WmAppTray,
-            hIcon = LoadIcon(nint.Zero, 32512),
+            hIcon = _icon,
             szTip = tip,
         };
     }
@@ -101,8 +109,8 @@ internal sealed class TrayIconService : IDisposable
     [DllImport("shell32.dll", EntryPoint = "Shell_NotifyIconW")]
     private static extern bool Shell_NotifyIcon(uint dwMessage, ref NotifyIconData lpData);
 
-    [DllImport("user32.dll", EntryPoint = "LoadIconW")]
-    private static extern nint LoadIcon(nint hInstance, nint lpIconName);
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool DestroyIcon(nint hIcon);
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern nint CreatePopupMenu();

@@ -1,36 +1,6 @@
 ---
-import { copy, primaryDownloadHref } from "../content/copy";
+import { primaryDownloadHref } from "../content/copy";
+import { copy } from "../content/copy";
 ---
 
 <a class="button-primary download-cta" href={primaryDownloadHref}>{copy.downloadLabel}</a>
-<div class="download-empty" hidden>
-  <button class="button-primary" type="button" disabled>{copy.downloadLabel}</button>
-  <p>{copy.emptyState}</p>
-</div>
-
-<script is:inline>
-  function showDownloadEmpty() {
-    document.querySelectorAll(".download-cta").forEach((el) => el.remove());
-    document.querySelectorAll(".download-empty").forEach((el) =>
-      el.removeAttribute("hidden"),
-    );
-  }
-
-  if (new URLSearchParams(location.search).get("available") === "0") {
-    showDownloadEmpty();
-  } else {
-    fetch("/download/status")
-      .then((response) => response.json())
-      .then((status) => {
-        if (status.available === false) {
-          showDownloadEmpty();
-          return;
-        }
-        const version = document.getElementById("download-version");
-        if (version && status.version) {
-          version.textContent = status.version;
-        }
-      })
-      .catch(() => {});
-  }
-</script>

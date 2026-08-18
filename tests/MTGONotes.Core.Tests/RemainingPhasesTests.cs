@@ -30,11 +30,23 @@ public sealed class RemainingPhasesTests
         try
         {
             var store = new SettingsStore(path);
-            Assert.True(store.Save(new AppSettings { LiveAttachEnabled = false, OverlayEnabled = false }).IsSuccess);
+            Assert.True(store.Save(new AppSettings
+            {
+                LiveAttachEnabled = false,
+                OverlayEnabled = false,
+                OverlayX = 80,
+                OverlayY = 120,
+                OverlayMinimized = true,
+                Theme = AppTheme.Dark,
+            }).IsSuccess);
             var loaded = new SettingsStore(path);
             Assert.True(loaded.Load().IsSuccess);
             Assert.False(loaded.Current.LiveAttachEnabled);
             Assert.False(loaded.Current.OverlayEnabled);
+            Assert.Equal(80, loaded.Current.OverlayX);
+            Assert.Equal(120, loaded.Current.OverlayY);
+            Assert.True(loaded.Current.OverlayMinimized);
+            Assert.Equal(AppTheme.Dark, loaded.Current.Theme);
         }
         finally
         {

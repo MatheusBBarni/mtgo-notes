@@ -15,11 +15,19 @@ public sealed class AppSettings
 
     public bool OverlayEnabled { get; set; } = true;
 
+    public int OverlayX { get; set; } = 16;
+
+    public int OverlayY { get; set; } = 16;
+
+    public bool OverlayMinimized { get; set; }
+
     public bool TrayEnabled { get; set; } = true;
 
     public bool LaunchWithWindows { get; set; }
 
     public bool DiagnosticsEnabled { get; set; }
+
+    public string Theme { get; set; } = AppTheme.System;
 }
 
 public sealed class SettingsStore

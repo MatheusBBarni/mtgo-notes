@@ -3,7 +3,7 @@
 This is manual evidence. macOS test passes are not a substitute.
 
 1. Start MTGO and log in. Do **not** let this app type credentials.
-2. Launch `MTGONotes.App`. Overlay should stay click-through and not steal focus.
+2. Launch `MTGONotes.App`. Overlay should appear without stealing focus, show the brand icon, and be draggable from its header. Minimize collapses it to the header; Hide removes it until the tray toggle.
 3. Queue or join a match. Overlay should show `Detected opponent: <handle>`.
 4. Confirm the opponent. Notebook should create/reuse the profile.
 5. When game 1 starts, phase should become in-game restricted. History search stays blocked.

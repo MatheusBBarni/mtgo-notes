@@ -5,8 +5,10 @@ import {
 } from "../src/content/copy";
 
 describe("copy contract", () => {
-  it("exports the first-party download href", () => {
-    expect(primaryDownloadHref).toBe("/download/windows");
+  it("points the download CTA at GitHub Releases", () => {
+    expect(primaryDownloadHref).toBe(
+      "https://github.com/MatheusBBarni/mtgo-notes/releases",
+    );
   });
 
   it("rejects forbidden marketing claims", () => {

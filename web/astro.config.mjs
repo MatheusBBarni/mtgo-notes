@@ -1,7 +1,8 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  site: "https://mtgo-notes.pages.dev",
+  site: "https://matheusbarni.github.io",
+  base: "/mtgo-notes",
   output: "static",
   trailingSlash: "never",
   build: {
