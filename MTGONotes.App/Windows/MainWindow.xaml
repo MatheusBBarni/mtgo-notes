@@ -2,16 +2,24 @@
     x:Class="MTGONotes.App.Windows.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Background="{StaticResource CanvasBrush}" Padding="16">
+    <Grid Background="{ThemeResource CanvasBrush}" Padding="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock
-            FontSize="24"
-            Foreground="{StaticResource InkBrush}"
-            Text="MTGO Opponent Notes" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <Image
+                x:Name="BrandImage"
+                Width="28"
+                Height="28"
+                VerticalAlignment="Center" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="24"
+                Foreground="{ThemeResource InkBrush}"
+                Text="MTGO Opponent Notes" />
+        </StackPanel>
         <StackPanel Grid.Row="1" Margin="0,12,0,12" Orientation="Horizontal" Spacing="8">
             <Button x:Name="EncounterTab" Click="OnEncounterTab" Content="Encounter" />
             <Button x:Name="HistoryTab" Click="OnHistoryTab" Content="History" />
@@ -20,15 +28,15 @@
         <Grid Grid.Row="2">
             <ScrollViewer x:Name="EncounterPanel">
                 <StackPanel Spacing="8">
-                    <TextBlock x:Name="PhaseText" Foreground="{StaticResource MutedBrush}" />
-                    <TextBlock x:Name="LiveText" Foreground="{StaticResource MutedBrush}" />
+                    <TextBlock x:Name="PhaseText" Foreground="{ThemeResource MutedBrush}" />
+                    <TextBlock x:Name="LiveText" Foreground="{ThemeResource MutedBrush}" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBox x:Name="HandleBox" Width="260" PlaceholderText="Opponent handle" />
                         <Button Click="OnConfirmClick" Content="Confirm opponent" />
                         <Button Click="OnFinishClick" Content="Finish encounter" />
                         <Button x:Name="PauseLiveButton" Click="OnPauseLiveClick" Content="Pause live attach" />
                     </StackPanel>
-                    <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="StatusText" Foreground="{ThemeResource MutedBrush}" TextWrapping="Wrap" />
                     <ListView x:Name="NotesList" MinHeight="180" />
                 </StackPanel>
             </ScrollViewer>
@@ -47,15 +55,24 @@
             </Grid>
             <ScrollViewer x:Name="SettingsPanel" Visibility="Collapsed">
                 <StackPanel Spacing="10">
-                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource BodyBrush}"
+                    <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource BodyBrush}"
                                Text="Live attach reads the already-logged-in MTGO process. It is unofficial, can be paused, and never logs on or writes to MTGO." />
                     <CheckBox x:Name="LiveConsentBox" Content="I understand and enable live attach" Click="OnSettingsSave" />
                     <CheckBox x:Name="DeckConsentBox" Content="Allow official MTGO deck lookup (opens mtgo.com only)" Click="OnSettingsSave" />
                     <CheckBox x:Name="OverlayBox" Content="Show opponent overlay" Click="OnSettingsSave" />
                     <CheckBox x:Name="TrayBox" Content="Keep a tray icon" Click="OnSettingsSave" />
                     <CheckBox x:Name="AutostartBox" Content="Launch with Windows" Click="OnSettingsSave" />
+                    <RadioButtons
+                        x:Name="ThemeBox"
+                        Header="Theme"
+                        MaxColumns="3"
+                        SelectionChanged="OnThemeChanged">
+                        <x:String>Match Windows</x:String>
+                        <x:String>Light</x:String>
+                        <x:String>Dark</x:String>
+                    </RadioButtons>
                     <Button Click="OnOpenOfficialDecks" Content="Open official MTGO decklists" />
-                    <TextBlock x:Name="SettingsStatus" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="SettingsStatus" Foreground="{ThemeResource MutedBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </ScrollViewer>
         </Grid>

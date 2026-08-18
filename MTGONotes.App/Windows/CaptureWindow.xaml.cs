@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using MTGONotes.App.Host;
 using MTGONotes.App.Native;
+using MTGONotes.App.Themes;
 using MTGONotes.Core.Domain;
 using Windows.System;
 
@@ -16,6 +17,7 @@ public sealed partial class CaptureWindow : Window
         _host = host;
         InitializeComponent();
         Title = "Quick capture";
+        ThemeService.Apply(this, host.Settings.Theme);
         OverlayHwnd.ConfigureChrome(this, 420, 160);
     }
 

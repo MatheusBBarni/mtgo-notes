@@ -1,13 +1,15 @@
 using Microsoft.UI.Xaml;
 using MTGONotes.App.Live;
-using MTGONotes.Core.Domain;
 using MTGONotes.App.Native;
+using MTGONotes.App.Themes;
 using MTGONotes.App.Windows;
+using MTGONotes.Core.Domain;
 using MTGONotes.Core.Portability;
 using MTGONotes.Core.Session;
 using MTGONotes.Core.Settings;
 using MTGONotes.Data;
 using MTGONotes.Live;
+using Windows.UI.ViewManagement;
 
 namespace MTGONotes.App.Host;
 
@@ -21,6 +23,7 @@ public sealed class AppHost
     private TrayIconService? _tray;
     private CancellationTokenSource? _liveRun;
     private readonly CancellationTokenSource _lifetime = new();
+    private readonly UISettings _uiSettings = new();
     private bool _quitRequested;
 
     public CompanionSession Session { get; }
@@ -60,6 +63,9 @@ public sealed class AppHost
         _main = new MainWindow(this);
         _overlay = new OverlayWindow(this);
         _capture = new CaptureWindow(this);
+        AppIcon.Apply(_main);
+        AppIcon.Apply(_overlay);
+        AppIcon.Apply(_capture);
         _hotkey = new HotkeyService(_main);
         _messages = new WindowMessages(_main);
         _messages.Install();
@@ -83,6 +89,9 @@ public sealed class AppHost
         };
         _ = _hotkey.RegisterCaptureShortcut();
         ApplyChrome();
+        ApplyTheme();
+        _uiSettings.ColorValuesChanged += (_, _) =>
+            _main?.DispatcherQueue.TryEnqueue(ApplyTheme);
 
         _main.AppWindow.Closing += (_, args) =>
         {
@@ -131,12 +140,40 @@ public sealed class AppHost
         }
     }
 
+    public void RememberOverlay(int x, int y, bool minimized)
+    {
+        Settings.OverlayX = x;
+        Settings.OverlayY = y;
+        Settings.OverlayMinimized = minimized;
+        _ = SettingsStore.Save(Settings);
+    }
+
     public void SaveSettings()
     {
         _ = SettingsStore.Save(Settings);
         Autostart.Apply(Settings.LaunchWithWindows);
         ApplyChrome();
         ApplyLiveAttach();
+        ApplyTheme();
+    }
+
+    public void ApplyTheme()
+    {
+        var theme = AppTheme.Normalize(Settings.Theme);
+        if (_main is not null)
+        {
+            ThemeService.Apply(_main, theme);
+        }
+
+        if (_overlay is not null)
+        {
+            ThemeService.Apply(_overlay, theme);
+        }
+
+        if (_capture is not null)
+        {
+            ThemeService.Apply(_capture, theme);
+        }
     }
 
     public void Quit()

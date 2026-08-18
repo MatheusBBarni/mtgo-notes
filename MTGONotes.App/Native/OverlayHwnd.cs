@@ -18,6 +18,10 @@ internal static partial class OverlayHwnd
     private const uint SwpNomove = 0x0002;
     private const uint SwpNoactivate = 0x0010;
     private const uint SwpShowwindow = 0x0040;
+    private const uint WmSysCommand = 0x0112;
+    private const nuint ScMoveCaption = 0xF012;
+    private const int DwmwaWindowCornerPreference = 33;
+    private const int DwmwcpRound = 2;
 
     public static nint Handle(Window window) => WindowNative.GetWindowHandle(window);
 
@@ -27,13 +31,13 @@ internal static partial class OverlayHwnd
         return AppWindow.GetFromWindowId(Win32Interop.GetWindowIdFromWindow(hwnd));
     }
 
-    public static void ConfigureChrome(Window window, int width, int height)
+    public static void ConfigureChrome(Window window, int width, int height, bool resizable = true)
     {
         var appWindow = AppWindowFor(window);
         if (appWindow.Presenter is OverlappedPresenter presenter)
         {
             presenter.IsAlwaysOnTop = true;
-            presenter.IsResizable = true;
+            presenter.IsResizable = resizable;
             presenter.IsMinimizable = false;
             presenter.IsMaximizable = false;
             presenter.SetBorderAndTitleBar(false, false);
@@ -41,6 +45,8 @@ internal static partial class OverlayHwnd
 
         appWindow.IsShownInSwitchers = false;
         appWindow.Resize(new global::Windows.Graphics.SizeInt32(width, height));
+        RoundCorners(window);
+        ApplyToolStyle(window, clickThrough: false);
     }
 
     public static void ShowWithoutActivating(Window window)
@@ -57,7 +63,34 @@ internal static partial class OverlayHwnd
             SwpNomove | SwpNosize | SwpNoactivate | SwpShowwindow);
     }
 
-    public static void SetClickThrough(Window window, bool clickThrough)
+    public static void DragMove(Window window)
+    {
+        var hwnd = Handle(window);
+        _ = ReleaseCapture();
+        _ = SendMessageW(hwnd, WmSysCommand, ScMoveCaption, 0);
+    }
+
+    public static void Resize(Window window, int width, int height) =>
+        AppWindowFor(window).Resize(new global::Windows.Graphics.SizeInt32(width, height));
+
+    public static void RestorePosition(Window window, int x, int y)
+    {
+        var appWindow = AppWindowFor(window);
+        var display = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Primary);
+        var work = display.WorkArea;
+        var width = Math.Max(appWindow.Size.Width, 80);
+        var height = Math.Max(appWindow.Size.Height, 40);
+        var maxX = work.X + Math.Max(work.Width - width, 0);
+        var maxY = work.Y + Math.Max(work.Height - height, 0);
+        var clampedX = Math.Clamp(x, work.X, maxX);
+        var clampedY = Math.Clamp(y, work.Y, maxY);
+        appWindow.Move(new global::Windows.Graphics.PointInt32(clampedX, clampedY));
+    }
+
+    public static void SetClickThrough(Window window, bool clickThrough) =>
+        ApplyToolStyle(window, clickThrough);
+
+    private static void ApplyToolStyle(Window window, bool clickThrough)
     {
         var hwnd = Handle(window);
         var style = GetWindowLong(hwnd);
@@ -73,6 +106,16 @@ internal static partial class OverlayHwnd
         }
 
         _ = SetWindowLong(hwnd, style);
+    }
+
+    private static void RoundCorners(Window window)
+    {
+        var preference = DwmwcpRound;
+        _ = DwmSetWindowAttribute(
+            Handle(window),
+            DwmwaWindowCornerPreference,
+            ref preference,
+            sizeof(int));
     }
 
     private static int GetWindowLong(nint hwnd) => unchecked((int)GetWindowLongPtr(hwnd, GwlExstyle));
@@ -100,4 +143,18 @@ internal static partial class OverlayHwnd
         int cx,
         int cy,
         uint uFlags);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool ReleaseCapture();
+
+    [LibraryImport("user32.dll", EntryPoint = "SendMessageW")]
+    private static partial nint SendMessageW(nint hWnd, uint msg, nuint wParam, nint lParam);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(
+        nint hwnd,
+        int dwAttribute,
+        ref int pvAttribute,
+        int cbAttribute);
 }
