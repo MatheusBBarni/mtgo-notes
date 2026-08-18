@@ -24,9 +24,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
-    <PackageReference Include="CommunityToolkit.Mvvm">
-      <Aliases>ToolkitMvvm</Aliases>
-    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="MTGOSDK" />
   </ItemGroup>
   <ItemGroup>
