@@ -32,6 +32,17 @@ test("navigates to live attach and privacy", async ({ page }) => {
   await expect(page.getByText(/no signup/i)).toBeVisible();
 });
 
+test("theme toggle switches between light and dark", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/mtgo-notes");
+  const toggle = page.getByRole("button", { name: /use dark theme/i });
+  await expect(toggle).toBeVisible();
+  await toggle.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByRole("button", { name: /use light theme/i }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+});
+
 test("Home does not overflow at phone width", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/mtgo-notes");

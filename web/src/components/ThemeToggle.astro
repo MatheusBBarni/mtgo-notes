@@ -1,0 +1,38 @@
+<button
+  class="theme-toggle"
+  type="button"
+  data-theme-toggle
+  aria-pressed="false"
+  aria-label="Use dark theme"
+>
+  Dark
+</button>
+
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    var button = document.querySelector("[data-theme-toggle]");
+    if (!button) {
+      return;
+    }
+
+    function paint(theme) {
+      root.dataset.theme = theme;
+      button.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
+      button.setAttribute(
+        "aria-label",
+        theme === "dark" ? "Use light theme" : "Use dark theme",
+      );
+      button.textContent = theme === "dark" ? "Light" : "Dark";
+    }
+
+    paint(root.dataset.theme === "dark" ? "dark" : "light");
+    button.addEventListener("click", function () {
+      var next = root.dataset.theme === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem("theme", next);
+      } catch (_) {}
+      paint(next);
+    });
+  })();
+</script>

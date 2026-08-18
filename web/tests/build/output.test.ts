@@ -47,6 +47,8 @@ describe("brochure build output", () => {
       expect(document).toContain("Source on ");
       expect(document).toContain(`${base}/favicon.ico`);
       expect(document).toContain(`${base}/brand/icon.png`);
+      expect(document).toContain("data-theme-toggle");
+      expect(document).toContain("color-scheme");
     }
   });
 

@@ -30,6 +30,45 @@
   --duration: 180ms;
   --ease: ease-out;
   --z-skip: 100;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-primary: #ffffff;
+  --color-primary-active: #e8eaed;
+  --color-ink: #ffffff;
+  --color-body: #e8eaed;
+  --color-muted: #c5c8ce;
+  --color-hairline: #3a3f48;
+  --color-canvas: #181d26;
+  --color-surface-soft: #1d1f25;
+  --color-surface-strong: #2a2e36;
+  --color-surface-dark: #1d1f25;
+  --color-on-primary: #181d26;
+  --color-on-dark: #ffffff;
+  --color-link: #8ab4ff;
+  --color-link-active: #c2d6ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-primary: #ffffff;
+    --color-primary-active: #e8eaed;
+    --color-ink: #ffffff;
+    --color-body: #e8eaed;
+    --color-muted: #c5c8ce;
+    --color-hairline: #3a3f48;
+    --color-canvas: #181d26;
+    --color-surface-soft: #1d1f25;
+    --color-surface-strong: #2a2e36;
+    --color-surface-dark: #1d1f25;
+    --color-on-primary: #181d26;
+    --color-on-dark: #ffffff;
+    --color-link: #8ab4ff;
+    --color-link-active: #c2d6ff;
+  }
 }
 
 * {
@@ -110,6 +149,26 @@ a:active {
   justify-content: space-between;
   min-height: 64px;
   gap: var(--space-lg);
+}
+
+.header-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.theme-toggle {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-sm);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .brand {
@@ -282,6 +341,7 @@ a:active {
 .hero-card-dark {
   background: var(--color-surface-dark);
   color: var(--color-on-dark);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   padding: var(--space-xxl);
   max-width: 48rem;
@@ -304,7 +364,7 @@ a:active {
 
 .screenshot-placeholder figcaption {
   margin: 0;
-  color: var(--color-ink);
+  color: #181d26;
   font-weight: 500;
 }
 
