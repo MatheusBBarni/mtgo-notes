@@ -6,7 +6,7 @@
 
 ## Objective
 
-Give the Windows companion a public face: a static brochure that explains a private, local-first notes app (not a tracker, not an MTGO client, not a Videre clone) and lets a visitor download the latest Windows x64 zip from this site via Cloudflare R2 — never as a GitHub-primary CTA and never as a Pages static asset.
+Give the Windows companion a public face: a static brochure on GitHub Pages that explains a private, local-first notes app (not a tracker, not an MTGO client, not a Videre clone). The Download button opens the GitHub Releases page.
 
 **Pitch:** A private, local-first Windows companion that helps you remember MTGO opponents and review verifiable public context — without becoming an MTGO account client.
 
@@ -29,10 +29,9 @@ Give the Windows companion a public face: a static brochure that explains a priv
 
 ### Download
 
-- Same primary CTA as Home: **Download for Windows**, `href="/download/windows"`.
-- When a build exists: show version, Windows 10 22H2 / Windows 11 x64, unzip `MTGONotes.App.exe`. Live attach optional; MTGO already logged in if used. No auto-updater claim.
-- Small secondary text link to GitHub Releases (not the primary CTA).
-- **Empty state (no zip):** visually a **disabled** near-black primary button (no href) plus **“A Windows build is not published yet.”** Direct `GET /download/windows` still 302s to `/download?available=0` so no-JS and status-fetch failure never 404. `/download?available=0` server-renders the disabled state.
+- Same primary CTA as Home: **Download for Windows**, `href="https://github.com/MatheusBBarni/mtgo-notes/releases"`.
+- Download page shows Windows 10 22H2 / Windows 11 x64 and unzip `MTGONotes.App.exe`. Live attach optional; MTGO already logged in if used. No auto-updater claim.
+- No Cloudflare Pages, R2, or first-party zip stream.
 
 ### How it works
 
@@ -67,48 +66,29 @@ Give the Windows companion a public face: a static brochure that explains a priv
 
 ## Edge cases
 
-- First deploy has no zip → empty state is a launch requirement.
-- Status fetch fails → href stays `/download/windows`; Function 302s on miss.
-- JS disabled → same Function path; `?available=0` shows empty state.
-- Zip without meta → still download; version label may be omitted.
-- Meta without zip → unavailable.
-- Versioned object only, no `latest` → unavailable.
 - Forbidden copy (`tournament-safe`, `ban-proof`, `auto-updater`, “their current deck”, `account` for the player, `sync` as scrape) fails CI.
 - No `.zip` in `web/` or `dist/`.
 - Brand icon missing from output fails CI.
 
 ## Stack
 
-- Astro static in `web/`. Cloudflare Pages project `mtgo-notes`, Node 22, output `dist`, no `@astrojs/cloudflare` adapter.
-- Pages Functions: `web/functions/download/{windows,status}.ts`. Binding `RELEASES` → private R2 `mtgo-notes-releases`.
-- Vitest (Functions + copy guards), `astro build` output assertions, Playwright with stubbed download routes.
-- Site CI: `web.yml` on `web/**`. Windows `release.yml` does not run Astro tests.
+- Astro static in `web/`. GitHub Pages at `https://matheusbarni.github.io/mtgo-notes` (`base: /mtgo-notes`). Node 22, output `dist`.
+- Download CTA is the GitHub Releases URL. No Cloudflare Pages, Functions, or R2.
+- Vitest (copy guards + build output), Playwright visitor journeys.
+- Site CI + deploy: `web.yml`. Windows `release.yml` publishes the zip to GitHub Releases only.
 
 ## Constraints / non-goals
 
-- No auth, CMS, app backend, telemetry, custom domain, auto-updater, in-browser attach, or zip-as-Pages-asset.
+- No auth, CMS, app backend, telemetry, auto-updater, or in-browser attach.
 - No claims of official approval, tournament safety, or that bans are impossible.
 - WinUI / Core / Data / Live are untouched.
-
-## This pipeline vs operator
-
-| Agent (this cycle) | Operator |
-|---|---|
-| `web/` site, Functions, tests, `web.yml`, `release.yml` R2 steps | Pages project, R2 bucket, `RELEASES` binding, `CLOUDFLARE_*` secrets |
-| Empty-state production is a valid first publish | Live zip only after a later tagged release |
-
-## Out of scope for this cycle
-
-- Custom domain, live tagged zip, real product screenshots (placeholders only), sibling repo, Workers migration.
 
 ## User stories
 
 - **US-001** — As an MTGO player, I can read what the companion does and why it is not a tracker.
-- **US-002** — As a visitor, I can download the latest Windows build from a button on the site.
+- **US-002** — As a visitor, I can open GitHub Releases from a button on the site.
 - **US-003** — As a cautious player, I can read how live attach works and what risk it carries before I turn it on.
 - **US-004** — As a privacy-conscious player, I can confirm there is no signup and notes are not uploaded.
-- **US-005** — As a returning visitor, I get the current zip (stable `latest` object), not a stale versioned filename.
-- **US-006** — As a maintainer, a tagged GitHub Release automatically publishes that zip to R2 so I do not upload by hand.
 
 ## Language
 

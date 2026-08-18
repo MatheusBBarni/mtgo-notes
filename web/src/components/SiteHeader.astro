@@ -1,18 +1,19 @@
 ---
 import BrandMark from "./BrandMark.astro";
+import { pageHref } from "../lib/site";
 
-const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const current = Astro.url.pathname.replace(/\/$/, "") || pageHref("");
 const links = [
-  { href: "/", label: "Home" },
-  { href: "/download", label: "Download" },
-  { href: "/how-it-works", label: "How it works" },
-  { href: "/live-attach", label: "Live attach" },
-  { href: "/privacy", label: "Privacy" },
+  { href: pageHref(""), label: "Home" },
+  { href: pageHref("download"), label: "Download" },
+  { href: pageHref("how-it-works"), label: "How it works" },
+  { href: pageHref("live-attach"), label: "Live attach" },
+  { href: pageHref("privacy"), label: "Privacy" },
 ] as const;
 ---
 
 <header class="site-header">
-  <a class="brand" href="/">
+  <a class="brand" href={pageHref("")}>
     <BrandMark />
     <span>MTGO Opponent Notes</span>
   </a>
@@ -21,7 +22,7 @@ const links = [
       links.map((link) => (
         <a
           href={link.href}
-          aria-current={path === link.href ? "page" : undefined}
+          aria-current={current === link.href ? "page" : undefined}
         >
           {link.label}
         </a>

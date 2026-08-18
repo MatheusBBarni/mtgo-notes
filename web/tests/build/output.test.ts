@@ -4,9 +4,11 @@ import { describe, expect, it } from "vitest";
 import {
   assertAllowedCopy,
   findForbiddenThirdParty,
+  primaryDownloadHref,
 } from "../../src/content/copy";
 
 const dist = join(import.meta.dirname, "../../dist");
+const base = "/mtgo-notes";
 
 const routes = [
   "index.html",
@@ -36,15 +38,15 @@ describe("brochure build output", () => {
     for (const file of routes) {
       expect(existsSync(join(dist, file)), file).toBe(true);
       const document = html(file);
-      expect(document).toContain('href="/"');
-      expect(document).toContain('href="/download"');
-      expect(document).toContain('href="/how-it-works"');
-      expect(document).toContain('href="/live-attach"');
-      expect(document).toContain('href="/privacy"');
+      expect(document).toContain(`href="${base}"`);
+      expect(document).toContain(`href="${base}/download"`);
+      expect(document).toContain(`href="${base}/how-it-works"`);
+      expect(document).toContain(`href="${base}/live-attach"`);
+      expect(document).toContain(`href="${base}/privacy"`);
       expect(document).toMatch(/not affiliated/i);
       expect(document).toContain("Source on ");
-      expect(document).toContain("/favicon.ico");
-      expect(document).toContain("/brand/icon.png");
+      expect(document).toContain(`${base}/favicon.ico`);
+      expect(document).toContain(`${base}/brand/icon.png`);
     }
   });
 
@@ -55,22 +57,18 @@ describe("brochure build output", () => {
     expect(home).toContain("fast capture");
     expect(home).toContain("recall between games");
     expect(home).toMatch(/board logger/i);
-    expect(home).toContain('href="/download/windows"');
+    expect(home).toContain(`href="${primaryDownloadHref}"`);
     expect(home).toContain("Download for Windows");
   });
 
-  it("renders Download requirements, empty state, and a first-party CTA", () => {
+  it("renders Download requirements and a GitHub Releases CTA", () => {
     const page = html("download/index.html");
     expect(page).toContain("Windows 10 22H2");
     expect(page).toContain("Windows 11");
     expect(page).toContain("MTGONotes.App.exe");
-    expect(page).toContain("A Windows build is not published yet.");
-    expect(page).toContain("GitHub Releases");
-    expect(page).not.toContain(
-      "github.com/MatheusBBarni/mtgo-notes/releases/download/",
-    );
-    expect(page).toContain('href="/download/windows"');
-    expect(page).toMatch(/<button[^>]*disabled[^>]*>Download for Windows<\/button>/);
+    expect(page).toContain(`href="${primaryDownloadHref}"`);
+    expect(page).not.toContain("/download/windows");
+    expect(page).not.toContain("pages.dev");
   });
 
   it("renders live-attach risk copy in a dark card", () => {
@@ -113,7 +111,6 @@ describe("brochure build output", () => {
   it("ships the brand files and no zip", () => {
     expect(existsSync(join(dist, "favicon.ico"))).toBe(true);
     expect(existsSync(join(dist, "brand/icon.png"))).toBe(true);
-    expect(existsSync(dist)).toBe(true);
     const zips = [...walk(dist)].filter((file) => file.endsWith(".zip"));
     expect(zips).toEqual([]);
   });

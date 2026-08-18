@@ -4,6 +4,7 @@ import "@fontsource/inter/latin-500.css";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import { copy } from "../content/copy";
+import { assetHref } from "../lib/site";
 import "../styles/tokens.css";
 
 interface Props {
@@ -20,7 +21,7 @@ const { title, description = copy.pitch } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href={assetHref("favicon.ico")} />
     <title>{title}</title>
   </head>
   <body>

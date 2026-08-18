@@ -1,8 +1,0 @@
-{
-  "name": "mtgo-notes",
-  "pages_build_output_dir": "dist",
-  "compatibility_date": "2026-08-17",
-  "r2_buckets": [
-    { "binding": "RELEASES", "bucket_name": "mtgo-notes-releases" }
-  ]
-}
